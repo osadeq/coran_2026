@@ -1,6 +1,15 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, copyFileSync, readdirSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  copyFileSync,
+  readdirSync,
+  rmSync,
+  renameSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as QM from "quran-meta/warsh";
@@ -26,17 +35,33 @@ const arg = (name) => {
 
 const OFFLINE = process.argv.includes("--offline");
 
+const ZIP_NAME = "kfgqpc_warsh_v30.zip";
+const EXTRACTED = join(CACHE, "extracted");
+const CACHED_ZIP = join(CACHE, ZIP_NAME);
+
 function log(step, message) {
   process.stdout.write(`[ingest:${step}] ${message}\n`);
+}
+
+// Un cache corrompu ne doit pas condamner l'ingest : on le supprime (au mieux) pour que
+// la prochaine execution reparte proprement plutot que de rejouer la meme erreur.
+function purgeCache() {
+  for (const target of [CACHED_ZIP, EXTRACTED]) {
+    try {
+      rmSync(target, { recursive: true, force: true });
+    } catch {
+      // Best effort : un fichier verrouille par un autre processus ne doit pas masquer
+      // l'erreur de verification, qui reste l'information utile.
+    }
+  }
 }
 
 async function resolveZip() {
   const local = arg("zip");
   if (local) return resolve(local);
-  const cached = join(CACHE, "kfgqpc_warsh_v30.zip");
-  if (existsSync(cached)) {
-    log("zip", `cache ${cached}`);
-    return cached;
+  if (existsSync(CACHED_ZIP)) {
+    log("zip", `cache ${CACHED_ZIP}`);
+    return CACHED_ZIP;
   }
   if (OFFLINE) throw new IngestError("--offline mais aucun ZIP en cache");
   const url = arg("zip-url");
@@ -50,9 +75,17 @@ async function resolveZip() {
   if (!res.ok) throw new IngestError(`telechargement echoue: HTTP ${res.status}`);
   mkdirSync(CACHE, { recursive: true });
   const buf = Buffer.from(await res.arrayBuffer());
-  const { writeFileSync } = await import("node:fs");
-  writeFileSync(cached, buf);
-  return cached;
+  // Ecriture atomique : un telechargement interrompu ne doit pas laisser un ZIP tronque
+  // a la place finale, que les executions suivantes reutiliseraient definitivement.
+  const tmp = `${CACHED_ZIP}.${process.pid}.part`;
+  try {
+    writeFileSync(tmp, buf);
+    renameSync(tmp, CACHED_ZIP);
+  } catch (error) {
+    rmSync(tmp, { force: true });
+    throw error;
+  }
+  return CACHED_ZIP;
 }
 
 function findCorpusRoot(out) {
@@ -74,18 +107,33 @@ function resolveCorpusRoot(out) {
   );
 }
 
-async function extractZip(zipPath) {
-  const out = join(CACHE, "extracted");
-  const deja = findCorpusRoot(out);
+function extractZip(zipPath) {
+  const deja = findCorpusRoot(EXTRACTED);
   if (deja) {
     log("zip", "deja extrait");
     return deja;
   }
-  mkdirSync(out, { recursive: true });
+  mkdirSync(EXTRACTED, { recursive: true });
   log("zip", "extraction");
-  const ps = `$ErrorActionPreference='Stop'; Expand-Archive -LiteralPath '${zipPath}' -DestinationPath '${out}' -Force`;
-  execFileSync("powershell", ["-NoProfile", "-Command", ps], { stdio: "inherit" });
-  return resolveCorpusRoot(out);
+  // Les deux chemins voyagent par l'ENVIRONNEMENT, jamais dans le texte de la commande.
+  // PowerShell 5.1 ajoute les arguments suivant `-Command` a la commande comme du CODE
+  // source : un chemin contenant un apostrophe casse l'analyse (verifie : ParserError
+  // "Le terminateur ' est manquant") et un point-virgule permet d'injecter des instructions.
+  // Une variable d'environnement est relue comme une DONNEE, jamais reparsee.
+  const ps =
+    "$ErrorActionPreference='Stop'; " +
+    "Expand-Archive -LiteralPath $env:CORAN_INGEST_ZIP -DestinationPath $env:CORAN_INGEST_OUT -Force";
+  try {
+    execFileSync("powershell", ["-NoProfile", "-Command", ps], {
+      stdio: "inherit",
+      env: { ...process.env, CORAN_INGEST_ZIP: zipPath, CORAN_INGEST_OUT: EXTRACTED },
+    });
+  } catch (error) {
+    // Une extraction interrompue laisse un arbre partiel que `findCorpusRoot` accepte a tort.
+    rmSync(EXTRACTED, { recursive: true, force: true });
+    throw new IngestError(`extraction impossible: ${error.message}`);
+  }
+  return resolveCorpusRoot(EXTRACTED);
 }
 
 const TIMINGS_CACHE = join(CACHE, "timings");
@@ -117,17 +165,77 @@ async function fetchJsonCached(url, cachePath) {
   throw new IngestError(`telechargement timings impossible: ${lastError.message}`);
 }
 
-async function main() {
-  const zipPath = await resolveZip();
-  const digest = await sha256File(zipPath);
-  if (digest !== KFGQPC.zipSha256) {
-    throw new IngestError(
-      `SHA-256 du ZIP inattendu.\n  attendu ${KFGQPC.zipSha256}\n  obtenu  ${digest}`,
-    );
+// Un `--audio-base` errone se retrouve dans les 114 `audioUrl` commitees ET dans le
+// rapport : une coquille ne doit pas pouvoir passer en silence.
+function resolveAudioBase() {
+  const base = arg("audio-base") ?? AUDIO_BASE;
+  let url;
+  try {
+    url = new URL(base);
+  } catch {
+    throw new IngestError(`--audio-base invalide (URL illisible): ${base}`);
   }
-  log("zip", "SHA-256 conforme");
+  if (url.protocol !== "https:") {
+    throw new IngestError(`--audio-base doit etre en https: (recu ${url.protocol}) : ${base}`);
+  }
+  return base;
+}
 
-  const root = await extractZip(zipPath);
+function readCorpusJson(root) {
+  try {
+    return JSON.parse(readFileSync(join(root, KFGQPC.json.path), "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+// Le ZIP ne sert qu'a controler le SHA-256 du contenant ; l'extraction elle-meme est
+// verifiee par MD5, un controle de contenu plus fort. Quand l'extraction ET les timings
+// sont deja en cache, exiger le ZIP ferait echouer `--offline` dans le seul etat ou il a
+// un sens.
+function timingsFullyCached(reciterId, rows) {
+  return parseKfgqpc(rows).surahs.every((s) => existsSync(timingCachePath(reciterId, s.n)));
+}
+
+function timingCachePath(reciterId, surah) {
+  return join(TIMINGS_CACHE, String(reciterId), `${surah}.json`);
+}
+
+async function main() {
+  // Le recitant conditionne le cache timings, donc la decision "ZIP necessaire ou non" :
+  // il est choisi avant tout acces disque reseau, `selectReciter` etant pur.
+  const reciter = selectReciter(arg("reciter"));
+  const audioBase = resolveAudioBase();
+
+  const cachedRoot = findCorpusRoot(EXTRACTED);
+  const cachedRows = cachedRoot ? readCorpusJson(cachedRoot) : null;
+  let root;
+  let rows;
+  if (cachedRows && timingsFullyCached(reciter.id, cachedRows)) {
+    log("zip", "extraction et timings en cache: ZIP ignore");
+    root = cachedRoot;
+    rows = cachedRows;
+  } else {
+    if (cachedRoot) log("zip", "extraction incomplete ou timings manquants: ZIP requis");
+    const zipPath = await resolveZip();
+    const digest = await sha256File(zipPath);
+    if (digest !== KFGQPC.zipSha256) {
+      // Un ZIP tronque (telechargement interrompu) resterait la cause du meme echec a
+      // chaque execution : on le supprime pour que la suivante retelecharge.
+      const cached = existsSync(zipPath) && resolve(zipPath) === CACHED_ZIP;
+      if (cached) {
+        rmSync(zipPath, { force: true });
+        log("zip", "ZIP de cache invalide supprime: retelechargement au prochain run");
+      }
+      throw new IngestError(
+        `SHA-256 du ZIP inattendu.\n  attendu ${KFGQPC.zipSha256}\n  obtenu  ${digest}`,
+      );
+    }
+    log("zip", "SHA-256 conforme");
+    root = extractZip(zipPath);
+    rows = readCorpusJson(root);
+  }
+
   const jsonPath = join(root, KFGQPC.json.path);
   const ttfPath = join(root, KFGQPC.ttf.path);
   for (const [p, expected] of [
@@ -136,13 +244,31 @@ async function main() {
   ]) {
     if (!existsSync(p)) throw new IngestError(`fichier absent dans le ZIP: ${p}`);
     const got = md5Hex(readFileSync(p));
-    if (got !== expected) throw new IngestError(`MD5 inattendu pour ${p}: ${got}`);
+    if (got !== expected) {
+      // Le contenu est verifie par MD5 : c'est lui qui autorise a se passer du ZIP, donc
+      // une extraction corrompue doit etre effacee, sinon le prochain run rejoue l'echec.
+      purgeCache();
+      throw new IngestError(
+        `MD5 inattendu pour ${p}: ${got}\n  attendu ${expected}\n` +
+          "  extraction et ZIP de cache supprimes. Si le ZIP a ete fourni par --zip, " +
+          "c'est ce fichier-la qu'il faut re-fournir : l'extraction etait corrompue.",
+      );
+    }
   }
   log("zip", "JSON et TTF conformes");
 
-  const rows = JSON.parse(readFileSync(jsonPath, "utf8"));
   const parsed = parseKfgqpc(rows);
   log("texte", `${parsed.meta.ayahCount} ayat, ${parsed.meta.surahCount} sourates`);
+
+  // Garde-fou AVANT toute ecriture : la purge de `src/data/timings/` plus bas est
+  // irreversible, donc on refuse de commencer si le corpus lu est vide. Apres la purge, un
+  // echec laisserait un `quran-warsh.json` encore valide mais des timings disparus.
+  if (parsed.surahs.length === 0 || parsed.meta.ayahCount === 0) {
+    throw new IngestError(
+      "corpus vide: aucun timing ne sera ecrit. Verifier que le JSON a bien ete lu " +
+        "AVANT la purge de src/data/timings.",
+    );
+  }
 
   for (const surah of parsed.surahs) {
     const expected = surahCounts[String(surah.n)];
@@ -173,22 +299,29 @@ async function main() {
   }
   log("corroboration", `${actual.length} ecarts de juz, identiques a la fixture`);
 
-  const reciter = selectReciter(arg("reciter"));
-  const timingsDir = join(DATA, "timings", String(reciter.id));
-  const audioBase = arg("audio-base") ?? AUDIO_BASE;
+  const timingsRoot = join(DATA, "timings");
+  const timingsDir = join(timingsRoot, String(reciter.id));
   const precisionCounts = { exact: 0, partial: 0, estimated: 0 };
   const surahReports = [];
   const audioUrls = {};
+
+  // On repart d'un repertoire vide : sans ca, un fichier `timings/<reciter>/<n>.json`
+  // laisse par un run anterieur d'un autre reciter, ou d'une surate disparue du corpus,
+  // continuerait d'etre servi et `git status` resterait propre alors que le contenu est
+  // heterogene. On purge donc TOUT `src/data/timings/`, pas seulement le sous-repertoire du
+  // recitant courant : c'est ce qui garantit l'absence de relicat d'un autre reciter.
+  // La verification d'idempotence porte sur le repertoire vide, donc cette suppression fait
+  // partie du resultat observe, pas de son nettoyage.
+  rmSync(timingsRoot, { recursive: true, force: true });
+  mkdirSync(timingsDir, { recursive: true });
+  log("timings", `repertoire vide: ${timingsRoot}`);
 
   for (const surah of parsed.surahs) {
     const url = TIMINGS_ENDPOINT.replace("{surah}", String(surah.n)).replace(
       "{reciter}",
       String(reciter.id),
     );
-    const payload = await fetchJsonCached(
-      url,
-      join(TIMINGS_CACHE, String(reciter.id), `${surah.n}.json`),
-    );
+    const payload = await fetchJsonCached(url, timingCachePath(reciter.id, surah.n));
     // La reponse est un TABLEAU PLAT d'ayat (pas [{surah, ayahs}]). Le champ `audio`
     // n'existe pas : l'URL se reconstruit depuis le serveur du moshaf declare au manifeste.
     const ayat = normalizeTimings(payload);
@@ -208,7 +341,11 @@ async function main() {
 
     let rowsOut = inRange.slice(0, info.coveredMax).map((a) => [a.ayah, a.startTime, a.endTime]);
 
-    const durationMs = ayat.length > 0 ? Math.max(...ayat.map((a) => a.endTime)) : 0;
+    // La duree de reference doit venir des ayat REELLEMENT retenus (`inRange`), pas de la
+    // reponse brute : un timing hors plage (numero > canonicalCount) rejetterait le test
+    // de monotonie de `estimateTail` et ferait varier `durationMs` selon que la reponse
+    // contient ou non ces lignes.
+    const durationMs = inRange.length > 0 ? Math.max(...inRange.map((a) => a.endTime)) : 0;
 
     if (info.missingTail > 0 && durationMs === 0) {
       throw new IngestError(

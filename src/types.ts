@@ -26,8 +26,11 @@ export type TimingRow = readonly [ayah: number, startMs: number, endMs: number];
 export interface AyahGeometry {
   polygon: string | null;
   page: string | null;
-  x: string;
-  y: string;
+  // 26 ayat sur 6214 n'ont ni polygon ni page, donc pas de coordonnees non plus : les
+  // quatre champs tombent a `null` ensemble. Les declarer `string` promettrait un `string`
+  // la ou le corpus commite contient `null`.
+  x: string | null;
+  y: string | null;
 }
 
 export interface SurahTimings {
