@@ -13,6 +13,15 @@
 > renvoie bien des timings Warsh. Les mesures initiales portaient donc sur un jeu de données
 > inconnu. Les chiffres ci-dessous sont ceux de `read=118`, revérifiés.
 
+> **Correction du 2026-09-27, 3ᵉ passe — source de texte résolue.** Les sections 2.5, 3 et 5.4
+> affirmaient qu'aucun texte Warsh n'était accessible et tablaient sur **6236** ayat. C'était faux
+> sur les deux points. Le **Complexe du Roi Fahd** (`qurancomplex.gov.sa`) publie la base de
+> données officielle de la Madinah Mushaf pour la riwaya Warsh, avec empreintes publiées. Elle
+> compte **6214 ayat**, et **0 écart de page** sur les 604 pages avec `quran-meta`. Le décompte
+> de référence du projet est donc **6214**, pas 6236. La police KFGQPC Warsh devient **obligatoire**
+> (et non plus un simple repli), car le texte officiel emploie 14 codepoints qui ne sont pas
+> rendus par les polices arabes standard. Détail et preuves en section 2.5.
+
 ---
 
 ## 1. Objectif
@@ -25,7 +34,7 @@ Fonctionnalités retenues :
 
 - Sélection de la sourate, de l'ayah de départ et du récitant
 - Surbrillance de l'ayah en cours, synchronisée sur l'audio
-- Recherche full-text sur les 6236 ayat
+- Recherche full-text sur les 6214 ayat
 - Traduction française (Hamidullah) affichable sous chaque ayah
 - Mode « page du Coran » avec surbrillance sur la page du mushaf
 - Signets et reprise de lecture
@@ -125,18 +134,35 @@ Conséquence : **la réponse n'est jamais consommée directement par le client.*
 classée et validée au build. Une sourate non validée bascule en `estimated` plutôt que de
 désynchroniser silencieusement.
 
-### 2.5 Aucun texte Warsh n'est disponible via API
+### 2.5 Source du texte : KFGQPC Warsh v30 (officiel)
 
-mp3quran n'expose aucun endpoint de texte (`/quran/{n}`, `/quran_text/{n}`, `/text/{n}`,
-`/ayat/{n}`, `/tafsir/{n}` → 404 tous). `raw.githubusercontent.com` est injoignable depuis
-l'environnement de développement.
+mp3quran n'expose aucun endpoint de texte. La source autoritaire est le Complexe du Roi Fahd
+(`https://qurancomplex.gov.sa/quran-dev/`) qui publie le **paquet officiel KFGQPC Warsh v30**
+(`kfgqpc_warsh_v30.zip`, date de dernière modification 2026-09-20).
 
-Sources retenues pour le texte, dans cet ordre :
+**Empreintes validées (SHA-256 public) :**
+- ZIP : `B2436CC201CDDD3E456ABA708B0A2E5B851CE6C5A3405DB932FD07DB612F8650`
+- Fichier extrait : `kfgqpc_warsh_v30-data/kfgqpc_warsh_v30.json` — 6214 enregistrements
 
-1. `ar.wikisource.org` via l'API MediaWiki (confirmé joignable, HTTP 200)
-2. dataset JSON de repli, via jsDelivr
+**Caractéristiques du JSON officiel :**
+- 114 sourates, **6214 ayat** (id **1..6214 contigus**)
+- Champs : `id, jozz, page, sura_no, sura_name_en, sura_name_ar, line_start, line_end, aya_no, aya_text_unicode`
+- Pages **1–604** (604 distinctes). Al-Fatiha 1:1 est bien « Al-Hamdu » (pas de basmala numérotée)
+- Les écarts de pagination/juz avec `quran-meta` sont 0 pour les pages et 17 sur les frontières de `jozz` (cf. section 3.4)
 
-Le texte est **figé dans le dépôt au build**, jamais lu à l'exécution.
+**Rendu Uthmanic obligatoire :** le champ `aya_text_unicode` utilise 14 codepoints étendus
+(U+0870–U+08F2) qui ne sont rendus correctement que par la police fournie
+`kfgqpc_warsh_v30-font/kfgqpc_warsh_v30.ttf` (MD5 `1417F8F6397AEC787F5862733A423762`). Un nettoyage
+naïf corrompt ce texte (perte d'alef/signes madd).
+
+Le CSV contient également `aya_text_emlaey` (Unicode standard) pour la recherche full-text et les
+exports non typographiques, mais **l'affichage du texte coranique** utilisera la version
+`aya_text_unicode` + la police KFGQPC.
+
+**Stratégie retenue :** le JSON officiel KFGQPC est la **source unique de vérité** pour le texte
+Warsh. Il est **figé dans le dépôt au build** et jamais lu à l'exécution. Aucune API tierce n'est
+consommée pour le texte. La police KFGQPC est embarquée dans le build statique (`@font-face`)
+avec le texte Uthmanic authentique. Le nombre de référence est **6214 ayat**, et non 6236.
 
 ### 2.6 Limite de granularité
 
@@ -152,8 +178,8 @@ l'exécution.
 
 | Fichier | Contenu | Origine |
 |---|---|---|
-| `quran-warsh.json` | 114 sourates, 6236 ayat, texte Warsh | ar.wikisource.org, puis dataset JSON |
-| `translations-fr.json` | 6236 ayat, Hamidullah | API publique de traduction |
+| `quran-warsh.json` | 114 sourates, **6214 ayat**, texte Warsh (KFGQPC v30, `aya_text_unicode`) | Complexe du Roi Fahd (`kfgqpc_warsh_v30.zip`, SHA-256 vérifié) |
+| `translations-fr.json` | 6214 ayat, Hamidullah | API publique de traduction |
 | `meta.json` | nom ar/fr, nombre d'ayat, type de révélation, juz, hizb | dérivé |
 | `timings/{reciter}/{surah}.json` | table de sync validée | `ayat_timing` mp3quran |
 | `pages.json` | map ayah → URL de page SVG | champ `page` des timings |
@@ -211,13 +237,30 @@ entre l'audio et le texte affiché.
 - sourates 1 et 9 : pas de basmala dans le décompte du texte, alors que le timing peut en
   contenir une entrée synthétique ; l'ingest ne les aligne jamais par simple arithmétique
 
-### 3.4 Map des pages
+### 3.4 Autorité de pagination et de juz
 
-Le champ `page` des timings est autoritaire pour le rattachement ayah → page du mushaf Warsh.
-Comme la couverture diffère d'un réciteur à l'autre, `pages.json` est construit par **fusion** de
-la couverture de tous les réciteurs timings, en retenant pour chaque ayah la première valeur
-non nulle. L'ordre de priorité est : Al-Husary, puis Muhammad Sayed, puis les autres. Les ayahs
-non couverts par aucun réciteur sont comblés par interpolation entre pages voisines et signalés
+**Autorité retenue : KFGQPC Warsh v30 (officiel).** Vérifié par comparaison programmatique de
+ses 6214 enregistrements contre `quran-meta/warsh` (MIT) :
+
+| Axe | KFGQPC officiel | quran-meta | Décision |
+|---|---|---|---|
+| Pagination | 604 pages | 604 pages | **identique, 0 écart** — `quran-meta` corrobore le KFC |
+| Frontières `jozz` | 6214 ayat | 6214 ayat | **17 ayat divergent** (2:141, 2:251, 2:252, 3:91, 3:92, 4:147, 5:82, 5:83, 6:111, 7:87, 9:93, 18:74, …) |
+
+Décision : le KFC fait foi pour le juz, parce que la police TTF embarquée est précisément calée
+sur ce découpage — afficher un juz divergent de la police produirait une incohérence visible. Les
+17 écarts sont consignés dans `ingest-report.json` pour traçabilité.
+
+`QuranWarshData/surahs.json` est **écarté** : structurellement valide (6214, 114, pages 1–604) mais
+**sans aucune licence** (LICENSE / LICENCE.md / LICENCE.txt / COPYING : 404), et en désaccord avec
+le KFC sur 65 `page_number` et 15 `juz`. `quran-meta` reste utilisé comme **corroboration** (MIT)
+et pour ses fonctions de conversion Warsh↔Hafs.
+
+Le champ `page` des timings reste utilisé pour le rattachement ayah → page, mais l'ingest **privilégie
+le `page` du KFGQPC** et ne recourt aux timings que pour les polygones. Comme la couverture diffère
+d'un réciteur à l'autre, la couverture polygonale est construite par **fusion** de la couverture de
+tous les réciteurs timings, en retenant pour chaque ayah la première valeur non nulle. Ordre de
+priorité : Al-Husary, puis Muhammad Sayed, puis les autres. Les ayahs sans polygone sont signalés
 dans le rapport.
 
 ### 3.5 Contrat de l'ingest
@@ -295,7 +338,9 @@ vers l'ayah correspondant.
 
 ### 5.4 Typographie et sens d'écriture
 
-- texte coranique en police Uthmani avec repli (`Amiri Quran`, `KFGQPC Hafs`)
+- texte coranique en **police KFGQPC Warsh obligatoire** (Uthmanic authentique du Complexe du
+  Roi Fahd, embarquée via `@font-face` — 14 codepoints étendus en dépendent). Repli d'urgence
+  uniquement en `aya_text_emlaey` si la police ne se charge pas
 - `dir="rtl"` sur le conteneur du texte coranique
 - `dir="ltr"` forcé sur les compteurs d'ayah et les champs numériques
 - les nombres d'ayah sont rendus via le glyphe ۝ (U+06DD) quand la police le fournit
@@ -340,20 +385,42 @@ Chaque phase produit un site fonctionnel.
 | Sourates à timings corrompus (7, 27, 96 chez Al-Husary) | bascule en `estimated`, signalée dans le rapport et dans l'UI |
 | Queues manquantes (1 et 110) | repli estimé sur la queue, badge affiché |
 | Deux conventions de numérotation coexistent (basmala synthétique ou non) | détection par présence de `ayah == 0`, jamais par arithmétique |
-| Texte Warsh issu d'une source tierce sans garantie de stabilité | figé au build, provenance et date de collecte dans le dépôt |
 | Younes Souilass incomplet | sélectionnable, `estimated`, proposition de changement |
 | Granularité limitée à l'ayah | assumée et documentée, aucun faux timing mot-à-mot |
 | SVG de page volumineux (303 Ko) | chargés uniquement pour la page affichée |
 | Le texte du mushaf (Warsh) peut différer du décompte de l'API | `meta.json` est la référence unique, l'ingest échoue en cas d'écart |
+| Texte Warsh exigeant la police KFGQPC non installée | la police est **embarquée** dans le build (`@font-face`, sous-ensemble si possible) ; repli `aya_text_emlaey` seulement en dernier recours |
+| 14 codepoints U+0870–U+08F2 non rendus par les polices standard du lecteur | police KFGQPC obligatoire ; test d'ingest qui échoue si un codepoint extended apparaît hors de la plage connue |
+| Frontières `jozz` divergentes (17 ayat) entre KFC et quran-meta | KFC fait foi (calé sur la police) ; écart consigné dans `ingest-report.json` |
+| Absence de licence explicite publiée par le KFC | page de crédit et `README` citant l'éditeur, l'URL exacte et le SHA-256 ; tout redistribution s'appuie sur le portail développeur public sans redevance |
 
 ---
 
 ## 9. Alternatives écartées
 
 - **Quran.com v4** — pas de Warsh
+- **`islam.js@1.3.0`** — annonce 6236 ayat et un « Warsh » identique au Hafs : faux Warsh, écarté
+- **`QuranWarshData/surahs.json`** — 6214 ayat corrects mais **aucune licence** et 65 écarts de
+  `page_number` vs KFC/quran-meta : inutilisable juridiquement, écarté
 - **Word-level sync** — aucun jeu de données Warsh mot-à-mot n'existe
 - **Next.js / SSR** — inutile, l'application est entièrement statique
 - **Lecture des timings mp3quran à l'exécution** — fragile, couple le site à un service tiers
   non versionné et non attribué
 - **Tarteel / EveryAyah** — non évaluées faute de timings Warsh vérifiés ; retenues seulement si
   l'ingest révèle que mp3quran ne couvre pas assez de sourates en précision exacte
+
+---
+
+## 10. Crédits et provenance
+
+| Ressource | Éditeur | Référence |
+|---|---|---|
+| Texte arabe Warsh (6214 ayat) + police Uthmanic | **Complexe du Roi Fahd**, Arabie saoudite | `https://qurancomplex.gov.sa/quran-dev/` — `kfgqpc_warsh_v30.zip`, SHA-256 `B2436CC2…F8650` |
+| Métadonnées Warsh (corroboration, conversions) | `quran-meta` | v7.0.0, MIT |
+| Timings et audio | mp3quran.net | Al-Husary, `read=118`, `rewaya_id=2` |
+| Traduction française | Muhammad Hamidullah | via QuranCDN / Quran.com Foundation |
+| Pages du mushaf (SVG) | mp3quran.net | `quran_pages_svg/{page}.svg` |
+
+Le portail développeur du Complexe du Roi Fahd met la base de données et la police à
+disposition gratuitement, sans inscription et sans mention de redevance. Cette autorisation
+d'usage est consignée ici et dans le `README` du dépôt, avec l'URL et l'empreinte de vérifiabilité.
