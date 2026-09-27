@@ -1,0 +1,4 @@
+ je veux un site web dynamique qui affiche le Saint Coran en Arabe (Version عفان نع شرو ةياورب). L'affichage des
+  ayates  sera synchronisé avec une récitation choisie au préalable. Exemple : Je choisie la sourate, le verset  de
+  début, le récitateur (comme صليوسا سنوي خيشلا ئراقلا), et l'affichage du récit commence en même temps que la lecture
+  (voix et écriture synchro au maximum).
