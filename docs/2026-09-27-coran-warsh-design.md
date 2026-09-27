@@ -155,14 +155,18 @@ mp3quran n'expose aucun endpoint de texte. La source autoritaire est le Complexe
 `kfgqpc_warsh_v30-font/kfgqpc_warsh_v30.ttf` (MD5 `1417F8F6397AEC787F5862733A423762`). Un nettoyage
 naïf corrompt ce texte (perte d'alef/signes madd).
 
-Le CSV contient également `aya_text_emlaey` (Unicode standard) pour la recherche full-text et les
-exports non typographiques, mais **l'affichage du texte coranique** utilisera la version
-`aya_text_unicode` + la police KFGQPC.
+**Contrainte vérifiée :** contrairement à la base Hafs, le paquet Warsh ne fournit **pas** de champ
+`aya_text_emlaey` (relevé sur les 6 formats : CSV, HTML, JSON, SQL, TXT, XLSX, XML — aucun champ
+`emlaey`). Il n'existe donc **aucune variante Imlaei de repli** livrée par l'éditeur. Conséquences :
+- si la police KFGQPC ne se charge pas, le texte reste affiché mais les glyphes étendus tombent en
+  substitution — il n'y a pas de second texte de secours à basculer
+- la recherche full-text et le surlignage doivent opérer sur `aya_text_unicode` lui-même, la
+  normalisation devant couvrir les 14 codepoints étendus (U+0870–U+08F2) en plus de l'arabe standard
 
 **Stratégie retenue :** le JSON officiel KFGQPC est la **source unique de vérité** pour le texte
 Warsh. Il est **figé dans le dépôt au build** et jamais lu à l'exécution. Aucune API tierce n'est
-consommée pour le texte. La police KFGQPC est embarquée dans le build statique (`@font-face`)
-avec le texte Uthmanic authentique. Le nombre de référence est **6214 ayat**, et non 6236.
+consommée pour le texte. La police KFGQPC est embarquée dans le build statique (`@font-face`).
+Le nombre de référence est **6214 ayat**, et non 6236.
 
 ### 2.6 Limite de granularité
 
@@ -245,11 +249,31 @@ ses 6214 enregistrements contre `quran-meta/warsh` (MIT) :
 | Axe | KFGQPC officiel | quran-meta | Décision |
 |---|---|---|---|
 | Pagination | 604 pages | 604 pages | **identique, 0 écart** — `quran-meta` corrobore le KFC |
-| Frontières `jozz` | 6214 ayat | 6214 ayat | **17 ayat divergent** (2:141, 2:251, 2:252, 3:91, 3:92, 4:147, 5:82, 5:83, 6:111, 7:87, 9:93, 18:74, …) |
+| Frontières `jozz` | 6214 ayat | 6214 ayat | **17 ayat divergent** — liste exhaustive ci-dessous |
+
+Les 17 ayat divergents, au format `soura:ayah  KFC=…  meta=…` :
+
+```
+2:141  KFC=2  meta=1        5:82   KFC=6  meta=7       27:57  KFC=19 meta=20
+2:251  KFC=3  meta=2        5:83   KFC=6  meta=7       36:27  KFC=23 meta=22
+2:252  KFC=3  meta=2        6:111  KFC=7  meta=8       39:31  KFC=24 meta=23
+3:91   KFC=4  meta=3        7:87   KFC=9  meta=8       41:46  KFC=25 meta=24
+3:92   KFC=4  meta=3        9:93   KFC=10 meta=11      18:74  KFC=16 meta=15
+4:147  KFC=6  meta=5        27:56  KFC=19 meta=20
+```
+
+Ces 17 valeurs sont figées dans `tests/fixtures/juz-divergence.json` et réinjectées dans
+`ingest-report.json` par le test d'ingest, afin qu'une divergence future de `quran-meta` soit
+détectée au lieu de passer silencieusement.
 
 Décision : le KFC fait foi pour le juz, parce que la police TTF embarquée est précisément calée
 sur ce découpage — afficher un juz divergent de la police produirait une incohérence visible. Les
 17 écarts sont consignés dans `ingest-report.json` pour traçabilité.
+
+> Note d'implémentation : la comparaison doit utiliser `quran-meta/warsh` via
+> `findJuz(surah, ayah)` / `findPage(surah, ayah)`. L'accesseur `getAyahMeta(surah, ayah)` de la
+> même bibliothèque renvoie des `page` erronées (il renvoie `page: 1` pour 2:1) et **ne doit pas**
+> être utilisé pour la corroboration.
 
 `QuranWarshData/surahs.json` est **écarté** : structurellement valide (6214, 114, pages 1–604) mais
 **sans aucune licence** (LICENSE / LICENCE.md / LICENCE.txt / COPYING : 404), et en désaccord avec
@@ -339,8 +363,9 @@ vers l'ayah correspondant.
 ### 5.4 Typographie et sens d'écriture
 
 - texte coranique en **police KFGQPC Warsh obligatoire** (Uthmanic authentique du Complexe du
-  Roi Fahd, embarquée via `@font-face` — 14 codepoints étendus en dépendent). Repli d'urgence
-  uniquement en `aya_text_emlaey` si la police ne se charge pas
+  Roi Fahd, embarquée via `@font-face` — 14 codepoints étendus en dépendent). Aucune variante de
+  repli n'existe dans le paquet éditeur : en cas d'échec de la police, les glyphes étendus sont
+  substitués, le texte reste lisible
 - `dir="rtl"` sur le conteneur du texte coranique
 - `dir="ltr"` forcé sur les compteurs d'ayah et les champs numériques
 - les nombres d'ayah sont rendus via le glyphe ۝ (U+06DD) quand la police le fournit
@@ -389,7 +414,7 @@ Chaque phase produit un site fonctionnel.
 | Granularité limitée à l'ayah | assumée et documentée, aucun faux timing mot-à-mot |
 | SVG de page volumineux (303 Ko) | chargés uniquement pour la page affichée |
 | Le texte du mushaf (Warsh) peut différer du décompte de l'API | `meta.json` est la référence unique, l'ingest échoue en cas d'écart |
-| Texte Warsh exigeant la police KFGQPC non installée | la police est **embarquée** dans le build (`@font-face`, sous-ensemble si possible) ; repli `aya_text_emlaey` seulement en dernier recours |
+| Texte Warsh exigeant la police KFGQPC non installée | la police est **embarquée** dans le build (`@font-face`) ; aucune variante `emlaey` n'existe dans le paquet éditeur, donc aucune bascule de texte possible — le risque est cosmétique, pas de perte de contenu |
 | 14 codepoints U+0870–U+08F2 non rendus par les polices standard du lecteur | police KFGQPC obligatoire ; test d'ingest qui échoue si un codepoint extended apparaît hors de la plage connue |
 | Frontières `jozz` divergentes (17 ayat) entre KFC et quran-meta | KFC fait foi (calé sur la police) ; écart consigné dans `ingest-report.json` |
 | Absence de licence explicite publiée par le KFC | page de crédit et `README` citant l'éditeur, l'URL exacte et le SHA-256 ; tout redistribution s'appuie sur le portail développeur public sans redevance |
