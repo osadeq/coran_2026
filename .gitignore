@@ -12,6 +12,7 @@ Thumbs.db
 *.log
 npm-debug.log*
 .vite/
+*.tsbuildinfo
 coverage/
 test-results/
 playwright-report/
