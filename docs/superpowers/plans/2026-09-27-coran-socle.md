@@ -68,7 +68,7 @@ coran/
 │   │   ├── text.mjs                # garde-fou codepoints étendus
 │   │   ├── parse-kfgqpc.mjs        # JSON officiel -> structure compacte
 │   │   ├── corroborate.mjs         # cross-check quran-meta (pages, juz)
-│   │   ├── classify.mjs            # exact | partial | estimated
+│   │   ├── timings.mjs              # normalisation snake_case + exact|partial|estimated
 │   │   ├── estimate.mjs            # queue estimée proportionnelle aux mots
 │   │   └── io.mjs                  # écriture JSON atomique
 │   └── fixtures/
@@ -82,7 +82,7 @@ coran/
 │   │   ├── quran-warsh.json
 │   │   ├── meta.json
 │   │   ├── ingest-report.json
-│   │   └── timings/118/1.json … 114.json
+│   │   └── timings/120/1.json … 114.json   # 120 = moshaf Warsh, PAS 118 (Hafs)
 │   ├── assets/fonts/kfgqpc_warsh_v30.ttf
 │   ├── styles/fonts.css
 │   ├── sync/
@@ -121,8 +121,29 @@ coran/
 | SHA-256 du ZIP | `b2436cc201cddd3e456aba708b0a2e5b851ce6c5a3405db932fd07db612f8650` |
 | MD5 du JSON | `03ba2b6147d7ca35c96166a3fbfe2ee1` |
 | MD5 du TTF | `1417f8f6397aec787f5862733a423762` |
-| Récitant par défaut | Al-Husary `read=118`, `rewaya_id=2` |
+| Récitant **timings** | moshaf Warsh `id=120` de l'API, donc **`read=120`** (`rewaya_id=2`) — voir §révocation ci-dessous |
+| Hôte audio Warsh | `https://server13.mp3quran.net/husr/Rewayat-Warsh-A-n-Nafi/` → `200 audio/mpeg` |
+| Hôte audio Hafs | `https://server8.mp3quran.net/husr/` → **502 (mort)** |
 | `aya_text_emlaey` | **inexistant** pour le Warsh — aucun repli texte possible |
+
+> ### ⚠ Révocation du 2026-09-27 — `read=118` est Hafs, pas Warsh
+>
+> Une version antérieure de ce plan figeait `read=118` (récitant Al-Husary) pour les timings.
+> **C'est faux et c'est le défaut silencieux le plus grave du plan** : l'endpoint
+> `ayat_timing` applique le moshaf *par défaut* du récitant, or le moshaf par défaut de
+> `118` est **Hafs A'n Assem**. Mesuré sur les 114 sourates :
+>
+> | | `read=118` (Hafs) | `read=120` (Warsh) | KFGQPC canonique |
+> |---|---|---|---|
+> | Total d'entrées | 6349 | **6214** | **6214** |
+> | Sourates divergentes | **51 / 114** | **0 / 114** | — |
+> | Basmala synthétique `ayah:0` | oui (114/114) | **non** | — |
+>
+> Avec `read=120` le total est **exactement 6214**, zéro divergence, et `ayah` va de `1..N`
+> en correspondance directe avec `aya_no` de KFGQPC — **sans basmala synthétique et sans
+> offset**. Le détail des observations est figé dans
+> [`2026-09-27-reseau-verifie.md`](2026-09-27-reseau-verifie.md) ; toutes les tâches
+> concernées ont été réécrites en conséquence.
 
 **Piège connu** : `quran-meta/warsh` expose `getAyahMeta(surah, ayah)` qui renvoie des `page`
 erronées (`page: 1` pour `2:1`, soit 12274 faux écarts). **Utiliser uniquement `findPage(surah, ayah)`
@@ -141,66 +162,37 @@ ou d'import.
 
 ---
 
-## Tâche 0 — Pré-vol réseau : figer les URL et le schéma distant
+## Tâche 0 — Pré-vol réseau : figer les URL et le schéma distant — **FAITE (2026-09-27)**
 
 On ne suppose rien de l'API mp3quran ni de l'hôte audio. Cette tâche observe, consigne, et
 **échoue explicitement** si quoi que ce soit ne correspond pas.
 
-**Créer** : `docs/superpowers/plans/2026-09-27-reseau-verifie.md`
+**Créé** : `docs/superpowers/plans/2026-09-27-reseau-verifie.md` — commit `109b7c5`.
 
-**Étapes**
+> **Résultat : la tâche a échoué, comme prévu.** L'étape 5 n'autorisait que « corriger la
+> section Étape 2 de la tâche 5 ». Les observations ont dépassé ce cadre : l'identifiant de
+> récitant lui-même était faux (Hafs au lieu de Warsh), ce qui invalidait les tâches 5, 12,
+> `App.tsx` et leurs tests. Le plan a été **réécrit** et la présente tâche close.
+> Détail : [`2026-09-27-reseau-verifie.md`](2026-09-27-reseau-verifie.md).
 
-1. Vérifier l'hôte audio du récitant 118. **Les deux candidats doivent être testés** car ils ne
-   désignent pas la même récitation :
+**Ce qui a été observé (et qui remplace toutes les hypothèses ci-dessous)**
 
-   ```powershell
-   foreach ($u in @(
-     'https://server13.mp3quran.net/husr/Rewayat-Warsh-A-n-Nafi/002.mp3',
-     'https://server13.mp3quran.net/husr/Rewayat-Warsh-A-n-Nafi/112.mp3',
-     'https://server8.mp3quran.net/husr/002.mp3',
-     'https://server8.mp3quran.net/husr/112.mp3'
-   )) { "$u -> $((Invoke-WebRequest -Uri $u -Method Head -UseBasicParsing).StatusCode)" }
-   ```
+| Hypothèse du plan | Observation |
+|---|---|
+| `read=118` = Warsh | **`read=118` est Hafs.** Warsh = **`read=120`** (moshaf `id=120`, `rewaya_id=2`) |
+| `https://mp3quran.net/api/v3/ayah_timings` | **404.** Correct : `https://www.mp3quran.net/api/v3/ayat_timing` (singulier, hôte `www.`, suivre le **301**) |
+| `[{ surah, ayahs: [...] }]` | **tableau plat** d'ayat |
+| `start` / `end` | **`start_time` / `end_time`**, entiers **millisecondes** |
+| `segments` | **`polygon`** (points SVG `"x,y x,y …"`) + `x`, `y`, `page` |
+| `page` numérique | **`page` est une URL de SVG** (`…/api/quran_pages_svg/002.svg`) |
+| `payload[0].audio` | **champ inexistant** — l'audio se reconstruit depuis `reciters` |
+| basmala synthétique | **inexistante** avec `read=120` ; `ayah` = `1..N` aligné sur `aya_no` |
+| géométrie complète | **26 ayat sur 6214** sans `polygon`/`page` (queues de 18 sourates) |
 
-   > `server8.mp3quran.net/husr/` est la récitation **Hafs** d'Al-Husary. Le texte du projet est
-   > **Warsh**. Apparier des timings Warsh avec un audio Hafs serait un défaut silencieux.
-   > Seule la branche `Rewayat-Warsh-A-n-Nafi/` est admissible.
-
-2. **L'URL audio fait autorité dans la réponse de l'API**, pas dans une constante devinée.
-   La relever pour les sourates extrêmes :
-
-   ```powershell
-   $r = Invoke-RestMethod 'https://mp3quran.net/api/v3/ayah_timings?surah=1&read=118'
-   $r.GetType().FullName
-   $r[0].surah
-   $r[0].ayahs.Count
-   $r[0].ayahs[0] | ConvertTo-Json -Depth 4
-   $r[0].audio
-   ```
-
-   Si le champ `audio` existe, l'ingest doit le consumed tel quel (cf. tâche 7) et
-   `AUDIO_BASE` ne sert plus que de repli. C'est la seule adaptation autorisée.
-
-3. Vérifier la couverture des 114 sourates :
-
-   ```powershell
-   $covered = 1..114 | ForEach-Object {
-     $d = Invoke-RestMethod "https://mp3quran.net/api/v3/ayah_timings?surah=$_&read=118"
-     [pscustomobject]@{ surah = $_; n = $d[0].ayahs.Count; basmala = ($d[0].ayahs | Where-Object { $_.ayah -eq 0 }).Count }
-   }
-   $covered | Where-Object { $_.basmala -gt 0 } | Format-Table
-   $covered | Where-Object { $_.n -eq 0 } | Format-Table
-   ```
-
-4. Consigner dans `docs/superpowers/plans/2026-09-27-reseau-verifie.md` : l'URL audio validée, la
-   forme JSON exacte de l'API timings, la liste des sourates avec basmala synthétique, la liste des
-   sourates sans données.
-
-5. Si la forme JSON diffère de celle supposée plus bas
-   (`[{ surah, ayahs: [{ ayah, start, end, segments }] }]`), **corriger la section Étape 2 de la
-   tâche 5** et le parseur associé. C'est la seule adaptation autorisée.
-
-**Commit** : `docs: consigne les URL et le schéma mp3quran verifies`
+L'hôte Hafs `server8.mp3quran.net/husr/` est en outre **502 (mort)**, et l'endpoint timings
+`read=120` sert **exactement 6214** ayat sur les 114 sourates, **zéro divergence** avec
+KFGQPC. Les quatre sondes audio de l'étape 1 (`server13` Warsh, `server8` Hafs) restent
+valides et ont été rejouées.
 
 ---
 
@@ -402,16 +394,20 @@ describe("empreintes", () => {
 });
 
 describe("selectReciter", () => {
-  it("retourne le reciter par defaut sans argument", () => {
-    expect(selectReciter(undefined).id).toBe(118);
+  it("retourne le moshaf Warsh par defaut", () => {
+    expect(selectReciter(undefined).id).toBe(120);
   });
 
-  it("retourne le reciter explicitement demande", () => {
-    expect(selectReciter("118").id).toBe(118);
+  it("retourne le moshaf explicitement demande", () => {
+    expect(selectReciter("120").id).toBe(120);
+  });
+
+  it("ne propose jamais le moshaf Hafs 118", () => {
+    expect(() => selectReciter("118")).toThrow(/inconnu/);
   });
 
   it("refuse un identifiant non numerique", () => {
-    expect(() => selectReciter("husary")).toThrow(/numerique/);
+    expect(() => selectReciter("warsh")).toThrow(/numerique/);
   });
 
   it("refuse un reciter absent du manifeste", () => {
@@ -482,12 +478,19 @@ export const QURAN_META = Object.freeze({
   juzAccessor: "findJuz",
 });
 
+// Recitant 118 = Mahmoud Khalil Al-Husary. Son moshaf par defaut (id 118) est Hafs A'n
+// Assem : l'utiliser pour les timings fausse le survol sur 51 sourates sur 114.
+// Warsh est le moshaf id 120 du meme recitant (rewaya_id 2, Murattal).
+// `id` est donc l'identifiant de MOSHAF, pas de recitant.
 export const RECITERS = Object.freeze([
   Object.freeze({
-    id: 118,
+    id: 120,
+    reciterId: 118,
     rewayaId: 2,
-    label: "Mahmoud Khalil Al-Husary",
-    labelFr: "Mahmoud Khalil Al-Husary",
+    moshafType: 21,
+    label: "Rewayat Warsh A'n Nafi' - Murattal",
+    labelFr: "Récitation de Warsh 'an Nafi' (Murattal)",
+    server: "https://server13.mp3quran.net/husr/Rewayat-Warsh-A-n-Nafi",
     priority: 0,
   }),
 ]);
@@ -503,12 +506,16 @@ export function selectReciter(raw) {
   return found;
 }
 
+// Verifie le 2026-09-27 : `ayah_timings` et l'hote nu renvoient 404. Le nom est
+// `ayat_timing` (singulier) et l'hote doit porter le prefixe `www.` (301 vers la locale).
 export const TIMINGS_ENDPOINT =
-  "https://mp3quran.net/api/v3/ayah_timings?surah={surah}&read={reciter}";
+  "https://www.mp3quran.net/api/v3/ayat_timing?surah={surah}&read={reciter}";
 
-// Repli seulement. La branche Warsh est obligatoire : `server8.../husr/` sert la
-// recitation Hafs d'Al-Husary, ce qui n'est pas la riwaya du texte. En pratique
-// l'ingest consomme le champ `audio` renvoye par l'API (cf. tache 7).
+export const RECITERS_ENDPOINT = "https://www.mp3quran.net/api/v3/reciters?language=eng";
+
+// La reponse timings ne contient AUCUN champ `audio` : l'URL doit etre reconstruite.
+// `server` ci-dessus est donc autoritaire, pas un repli. La branche Warsh est obligatoire :
+// `server8.../husr/` sert la recitation Hafs et repond 502 de toute facon.
 export const AUDIO_BASE = "https://server13.mp3quran.net/husr/Rewayat-Warsh-A-n-Nafi";
 ```
 
@@ -901,30 +908,121 @@ script jetable, puis **vérifier** que la somme vaut 6214 :
 
 ---
 
-## Tâche 5 — Classification et estimation des timings
+## Tâche 5 — Normalisation, classification et estimation des timings
 
-**Fichiers** : `scripts/lib/classify.mjs`, `scripts/lib/estimate.mjs`,
-`tests/unit/classify.test.ts`, `tests/unit/estimate.test.ts`
+**Fichiers** : `scripts/lib/timings.mjs`, `scripts/lib/estimate.mjs`,
+`tests/unit/timings.test.ts`, `tests/unit/estimate.test.ts`
 
-**Test d'abord** — `tests/unit/classify.test.ts` :
+> **Réécrit le 2026-09-27** d'après [`2026-09-27-reseau-verifie.md`](2026-09-27-reseau-verifie.md).
+> La version précédente supposait `[{ surah, ayahs: [{ ayah, start, end, segments }] }]`, un
+> champ `audio`, et une basmala synthétique `ayah:0`. **Les trois sont faux pour `read=120`.**
+>
+> Schéma réel — **tableau plat** d'ayat, `ayah` de `1..N`, temps en **millisecondes** :
+>
+> ```json
+> { "ayah": 1,
+>   "polygon": "206.48,46.08 172.36,46.08 172.36,72.23 206.48,72.23",
+>   "start_time": 6054, "end_time": 15993,
+>   "x": "178.34", "y": "63.11",
+>   "page": "https://www.mp3quran.net/api/quran_pages_svg/002.svg" }
+> ```
+
+**Test d'abord** — `tests/unit/timings.test.ts` :
 
 ```ts
 import { describe, expect, it } from "vitest";
-import { PRECISION, classifyTimings, contiguousPrefix, isMonotonic } from "../../scripts/lib/classify.mjs";
+import {
+  PRECISION,
+  classifyTimings,
+  contiguousPrefix,
+  isMonotonic,
+  normalizeTimings,
+} from "../../scripts/lib/timings.mjs";
 
-const timing = (ayah: number, start: number, end: number) => ({ ayah, start, end, segments: [] });
+const PAGE = "https://www.mp3quran.net/api/quran_pages_svg/002.svg";
+
+const row = (
+  ayah: number,
+  startTime: number,
+  endTime: number,
+  geometry: { polygon?: string | null; page?: string | null } = {},
+) => ({
+  ayah,
+  startTime,
+  endTime,
+  polygon: geometry.polygon === undefined ? "10,10 20,10 20,20" : geometry.polygon,
+  page: geometry.page === undefined ? PAGE : geometry.page,
+  x: "15",
+  y: "15",
+});
+
+describe("normalizeTimings", () => {
+  it("convertit start_time/end_time et garde le reste", () => {
+    const out = normalizeTimings([
+      {
+        ayah: 1,
+        polygon: "1,2 3,4",
+        start_time: 6054,
+        end_time: 15993,
+        x: "178.34",
+        y: "63.11",
+        page: PAGE,
+      },
+    ]);
+    expect(out).toEqual([
+      { ayah: 1, startTime: 6054, endTime: 15993, polygon: "1,2 3,4", page: PAGE, x: "178.34", y: "63.11" },
+    ]);
+  });
+
+  it("normalise une geometrie absente en null, pas en chaine vide", () => {
+    const out = normalizeTimings([
+      { ayah: 5, polygon: null, start_time: 0, end_time: 10, x: "", y: "", page: null },
+    ]);
+    expect(out[0].polygon).toBeNull();
+    expect(out[0].page).toBeNull();
+  });
+
+  it("refuse une charge utile qui n'est pas un tableau", () => {
+    expect(() => normalizeTimings({ surah: 1, ayahs: [] })).toThrow(TypeError);
+  });
+
+  it("refuse un temps non fini", () => {
+    expect(() =>
+      normalizeTimings([{ ayah: 1, polygon: null, start_time: null, end_time: 10, x: "", y: "", page: null }]),
+    ).toThrow(TypeError);
+  });
+});
 
 describe("classifyTimings", () => {
   it("exact quand les ayat couvrent exactement la sourate", () => {
-    const ayahs = [timing(0, 0, 900), timing(1, 900, 3000), timing(2, 3000, 5000), timing(3, 5000, 7000)];
+    const ayahs = [row(1, 0, 900), row(2, 900, 3000), row(3, 3000, 5000)];
     const r = classifyTimings({ ayahs, canonicalCount: 3 });
     expect(r.precision).toBe(PRECISION.EXACT);
-    expect(r.hasSyntheticBasmala).toBe(true);
     expect(r.missingTail).toBe(0);
+    expect(r.coveredMax).toBe(3);
+  });
+
+  it("rejette une basmala synthetique : signature d'un moshaf Hafs", () => {
+    // read=118 renvoie 114 basmalas ayah:0 et fausse le survol sur 51 sourates.
+    // L'ingest doit echouer bruyamment plutot que produire des timings silencieux faux.
+    expect(() =>
+      classifyTimings({ ayahs: [row(0, 0, 900), row(1, 900, 3000)], canonicalCount: 1 }),
+    ).toThrow(/ayah:0/);
+  });
+
+  it("compte les ayat sans geometrie sans les considerer manquants", () => {
+    const ayahs = [
+      row(1, 0, 1000),
+      row(2, 1000, 2000, { polygon: null, page: null }),
+      row(3, 2000, 3000),
+    ];
+    const r = classifyTimings({ ayahs, canonicalCount: 3 });
+    expect(r.precision).toBe(PRECISION.EXACT);
+    expect(r.missingGeometry).toEqual([2]);
   });
 
   it("partial quand la queue manque", () => {
-    const ayahs = [timing(1, 0, 1000), timing(2, 1000, 2000)];
+    const ayahs = [row(1, 0, 1000), row(2, 1000, 2000)];
     const r = classifyTimings({ ayahs, canonicalCount: 7 });
     expect(r.precision).toBe(PRECISION.PARTIAL);
     expect(r.coveredMax).toBe(2);
@@ -932,21 +1030,19 @@ describe("classifyTimings", () => {
   });
 
   it("estimated quand la numerotation deborde la sourate", () => {
-    const ayahs = Array.from({ length: 10 }, (_, i) => timing(i + 1, i * 100, i * 100 + 100));
+    const ayahs = Array.from({ length: 10 }, (_, i) => row(i + 1, i * 100, i * 100 + 100));
     const r = classifyTimings({ ayahs, canonicalCount: 6 });
     expect(r.precision).toBe(PRECISION.ESTIMATED);
     expect(r.missingTail).toBe(0);
   });
 
   it("plafonne coveredMax au compte canonique", () => {
-    // une numerotation qui deborde est etrangere au Warsh : elle ne couvre rien de plus,
-    // donc coveredMax ne peut pas depasser canonicalCount
-    const ayahs = Array.from({ length: 10 }, (_, i) => timing(i + 1, i * 100, i * 100 + 100));
+    const ayahs = Array.from({ length: 10 }, (_, i) => row(i + 1, i * 100, i * 100 + 100));
     expect(classifyTimings({ ayahs, canonicalCount: 6 }).coveredMax).toBe(6);
   });
 
   it("partial sur un trou interne", () => {
-    const ayahs = [timing(1, 0, 1000), timing(3, 1000, 2000)];
+    const ayahs = [row(1, 0, 1000), row(3, 1000, 2000)];
     const r = classifyTimings({ ayahs, canonicalCount: 3 });
     expect(r.precision).toBe(PRECISION.PARTIAL);
     expect(r.contiguous).toBe(false);
@@ -965,20 +1061,20 @@ describe("classifyTimings", () => {
 
 describe("isMonotonic", () => {
   it("accepte une sequence croissante non chevauchante", () => {
-    expect(isMonotonic([timing(1, 0, 100), timing(2, 100, 200)])).toBe(true);
+    expect(isMonotonic([row(1, 0, 100), row(2, 100, 200)])).toBe(true);
   });
 
   it("refuse un chevauchement", () => {
-    expect(isMonotonic([timing(1, 0, 150), timing(2, 100, 200)])).toBe(false);
+    expect(isMonotonic([row(1, 0, 150), row(2, 100, 200)])).toBe(false);
   });
 
   it("refuse un recul", () => {
-    expect(isMonotonic([timing(1, 200, 300), timing(2, 100, 200)])).toBe(false);
+    expect(isMonotonic([row(1, 200, 300), row(2, 100, 200)])).toBe(false);
   });
 
   it("refuse un intervalle vide ou negatif", () => {
-    expect(isMonotonic([timing(1, 0, 0)])).toBe(false);
-    expect(isMonotonic([timing(1, -10, 100)])).toBe(false);
+    expect(isMonotonic([row(1, 0, 0)])).toBe(false);
+    expect(isMonotonic([row(1, -10, 100)])).toBe(false);
   });
 });
 
@@ -998,7 +1094,7 @@ describe("contiguousPrefix", () => {
 });
 ```
 
-**Implémentation** — `scripts/lib/classify.mjs` :
+**Implémentation** — `scripts/lib/timings.mjs` :
 
 ```js
 export const PRECISION = Object.freeze({
@@ -1007,13 +1103,37 @@ export const PRECISION = Object.freeze({
   ESTIMATED: "estimated",
 });
 
+// L'API renvoie snake_case et des geometries absentes. On convertit une fois, ici, pour que
+// le reste de l'ingest ne manipule que des noms stables.
+export function normalizeTimings(payload) {
+  if (!Array.isArray(payload)) {
+    throw new TypeError("normalizeTimings: la reponse doit etre un tableau d'ayat");
+  }
+  return payload.map((raw) => {
+    const startTime = raw.start_time;
+    const endTime = raw.end_time;
+    if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
+      throw new TypeError(`normalizeTimings: timings invalides pour l'ayah ${raw.ayah}`);
+    }
+    return {
+      ayah: raw.ayah,
+      startTime,
+      endTime,
+      polygon: raw.polygon || null,
+      page: raw.page || null,
+      x: raw.x,
+      y: raw.y,
+    };
+  });
+}
+
 export function isMonotonic(ayatTimings) {
   for (const a of ayatTimings) {
-    if (!Number.isFinite(a.start) || !Number.isFinite(a.end)) return false;
-    if (a.start < 0 || a.end <= a.start) return false;
+    if (!Number.isFinite(a.startTime) || !Number.isFinite(a.endTime)) return false;
+    if (a.startTime < 0 || a.endTime <= a.startTime) return false;
   }
   for (let i = 1; i < ayatTimings.length; i += 1) {
-    if (ayatTimings[i].start < ayatTimings[i - 1].end) return false;
+    if (ayatTimings[i].startTime < ayatTimings[i - 1].endTime) return false;
   }
   return true;
 }
@@ -1032,20 +1152,34 @@ export function classifyTimings({ ayahs, canonicalCount }) {
     throw new TypeError("classifyTimings: canonicalCount invalide");
   }
 
-  const real = ayahs.filter((a) => a.ayah !== 0);
-  const hasSyntheticBasmala = real.length !== ayahs.length;
+  // Garde-fou moshaf. `read=118` renvoie un ayah:0 (basmala synthetique) sur les 114
+  // sourates et decale la numerotation sur 51 d'entre elles. C'est le seul mode de panne
+  // qui produit un fichier valide mais faux : on le refuse plutot que de l'ingester.
+  if (ayahs.some((a) => a.ayah === 0)) {
+    throw new Error(
+      "classifyTimings: basmala synthetique ayah:0 detectee — le moshaf du recitant " +
+        "n'est pas Warsh (utiliser read=120, pas read=118)",
+    );
+  }
 
-  if (real.length === 0) {
+  // 26 ayat sur 6214 n'ont ni polygon ni page. Leurs timings sont valides : on les compte
+  // pour piloter la degradation gracieuse, mais ils ne sont PAS des ayat manquants.
+  const missingGeometry = ayahs
+    .filter((a) => !a.polygon || !a.page)
+    .map((a) => a.ayah)
+    .sort((a, b) => a - b);
+
+  if (ayahs.length === 0) {
     return {
       precision: PRECISION.ESTIMATED,
       coveredMax: 0,
-      hasSyntheticBasmala,
       contiguous: false,
       missingTail: canonicalCount,
+      missingGeometry,
     };
   }
 
-  const numbers = real.map((a) => a.ayah).sort((a, b) => a - b);
+  const numbers = ayahs.map((a) => a.ayah).sort((a, b) => a - b);
   const prefix = contiguousPrefix(numbers);
   const contiguous = prefix === numbers.length;
 
@@ -1061,9 +1195,9 @@ export function classifyTimings({ ayahs, canonicalCount }) {
   return {
     precision,
     coveredMax,
-    hasSyntheticBasmala,
     contiguous,
     missingTail: Math.max(0, canonicalCount - coveredMax),
+    missingGeometry,
   };
 }
 ```
@@ -1370,7 +1504,7 @@ import { KFGQPC, RECITERS, TIMINGS_ENDPOINT, AUDIO_BASE, selectReciter } from ".
 import { md5Hex, sha256File } from "./lib/verify.mjs";
 import { IngestError, parseKfgqpc } from "./lib/parse-kfgqpc.mjs";
 import { compareWithQuranMeta } from "./lib/corroborate.mjs";
-import { classifyTimings } from "./lib/classify.mjs";
+import { classifyTimings, normalizeTimings } from "./lib/timings.mjs";
 import { estimateTail } from "./lib/estimate.mjs";
 import { writeJsonAtomic } from "./lib/io.mjs";
 import surahCounts from "./fixtures/surah-counts.json" with { type: "json" };
@@ -1531,30 +1665,26 @@ async function main() {
       url,
       join(TIMINGS_CACHE, String(reciter.id), `${surah.n}.json`),
     );
-    const raw = payload[0]?.ayahs ?? [];
-    const info = classifyTimings({ ayahs: raw, canonicalCount: surah.a.length });
+    // La reponse est un TABLEAU PLAT d'ayat (pas [{surah, ayahs}]). Le champ `audio`
+    // n'existe pas : l'URL se reconstruit depuis le serveur du moshaf declare au manifeste.
+    const ayat = normalizeTimings(payload);
+    const info = classifyTimings({ ayahs: ayat, canonicalCount: surah.a.length });
 
-    // L'URL audio vient de la reponse de l'API quand elle est presente : c'est la
-    // seule source d'autorite, elle seule sait quelle recitation est servie. Le repli
-    // n'est utilise que si le champ manque, et il est alors signale dans le rapport.
-    const audioUrl = payload[0]?.audio ?? `${audioBase}/${String(surah.n).padStart(3, "0")}.mp3`;
+    // `read=120` est le moshaf Warsh ; l'API ne valide pas la correspondance texte/timing,
+    // c'est donc l'invariant qu'on tient, pas l'API.
+    const audioUrl = `${audioBase}/${String(surah.n).padStart(3, "0")}.mp3`;
     audioUrls[String(surah.n)] = audioUrl;
-    if (!payload[0]?.audio) {
-      log("timings", `sourate ${surah.n}: champ audio absent, repli ${audioUrl}`);
-    }
 
     // On ne conserve que le prefixe contigu 1..k renvoye par l'API. Un trou interne
     // ou une numerotation etrangere a la riwaya ne doivent surtout pas produire de
     // doublon ni de desordre quand la queue estimee est concatenee.
-    const inRange = raw
-      .filter((a) => a.ayah !== 0)
+    const inRange = ayat
       .filter((a) => a.ayah >= 1 && a.ayah <= surah.a.length)
-      .map((a) => [a.ayah, a.start, a.end])
-      .sort((a, b) => a[0] - b[0]);
+      .sort((a, b) => a.ayah - b.ayah);
 
-    let rowsOut = inRange.slice(0, info.coveredMax);
+    let rowsOut = inRange.slice(0, info.coveredMax).map((a) => [a.ayah, a.startTime, a.endTime]);
 
-    const durationMs = raw.length > 0 ? Math.max(...raw.map((a) => a.end)) : 0;
+    const durationMs = ayat.length > 0 ? Math.max(...ayat.map((a) => a.endTime)) : 0;
 
     if (info.missingTail > 0 && durationMs === 0) {
       throw new IngestError(
@@ -1584,6 +1714,11 @@ async function main() {
       precision: info.precision,
       durationMs,
       ayat: rowsOut,
+      // Geometrie conservee telle quelle : `null` pour les 26 ayat sans polygone, que
+      // l'UI traitera en degrade gracieux plutot que de refusesur d'afficher l'ayah.
+      geometry: Object.fromEntries(
+        inRange.map((a) => [a.ayah, { polygon: a.polygon, page: a.page, x: a.x, y: a.y }]),
+      ),
     });
 
     precisionCounts[info.precision] += 1;
@@ -1592,10 +1727,17 @@ async function main() {
       precision: info.precision,
       coveredMax: info.coveredMax,
       canonical: surah.a.length,
-      hasSyntheticBasmala: info.hasSyntheticBasmala,
+      missingGeometry: info.missingGeometry,
     });
   }
   log("timings", JSON.stringify(precisionCounts));
+
+  const geometryGaps = surahReports.flatMap((r) =>
+    r.missingGeometry.map((a) => ({ surah: r.surah, ayah: a })),
+  );
+  if (geometryGaps.length > 0) {
+    log("timings", `${geometryGaps.length} ayat sans polygone (timings conserves)`);
+  }
 
   writeJsonAtomic(join(DATA, "quran-warsh.json"), parsed);
 
@@ -2039,7 +2181,7 @@ export function useSession(initial: Partial<SessionState> = {}) {
   const [state, setState] = useState<SessionState>({
     surah: 1,
     ayah: null,
-    reciter: 118,
+    reciter: 120,
     playing: false,
     ...initial,
   });
@@ -2173,7 +2315,7 @@ import { PlayerBar } from "../../src/components/PlayerBar";
 
 const timings = {
   surah: 112,
-  reciter: 118,
+  reciter: 120,
   audioUrl: "https://example.test/112.mp3",
   precision: "exact",
   durationMs: 40_000,
@@ -2189,7 +2331,7 @@ const base = {
   timings,
   audioUrl: "https://example.test/112.mp3",
   reciters: [],
-  reciter: 118,
+  reciter: 120,
   onReciter: () => {},
   onAyah: () => {},
 };
@@ -2236,6 +2378,19 @@ describe("PlayerBar", () => {
       />,
     );
     expect(screen.getByText(/estim/i)).toBeTruthy();
+  });
+
+  // La sourate 2 pese ~95 Mo. Toute degrade vers `fetch` + `blob:` tuerait l'onglet et
+  // le mobile. Le streaming par requetes `Range` est assure nativement par <audio src> ;
+  // ce test verrouille le choix, il n'a pas a simuler le navigateur.
+  it("branche l'audio en streaming, sans telechargement ni blob", () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    render(<PlayerBar {...base} />);
+    const audio = screen.getByTestId("player-audio") as HTMLAudioElement;
+    expect(audio.getAttribute("src")).toBe("https://example.test/112.mp3");
+    expect(audio.getAttribute("preload")).toBe("metadata");
+    expect(audio.getAttribute("src") ?? "").not.toMatch(/^blob:/);
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
 ```
@@ -2420,9 +2575,16 @@ export function App() {
 }
 ```
 
-L'URL audio vient de `timings.audioUrl`, écrit par l'ingest depuis le champ `audio` de
-l'API (tâche 0). Aucune constante d'hôte n'est codée en dur dans l'application : si
-l'URL change, seul `scripts/ingest.mjs` est à corriger, puis `npm run ingest`.
+> **Streaming, pas de téléchargement** : `PlayerBar` ne reçoit jamais le fichier. La sourate 2
+> fait ~95 Mo ; la charger en mémoire casserait l'onglet et le mobile. `<audio>` est branché
+> directement sur `audioUrl` et le navigateur gère les requêtes `Range` lui-même : c'est le
+> mécanisme natif du streaming, il n'y a donc **rien à implémenter côté fetch**. Ce qu'il faut
+> tester, c'est qu'on ne dégrade pas vers un `fetch` + `blob:`.
+
+L'URL audio vient de `timings.audioUrl`, écrit par l'ingest en **reconstruisant** l'URL depuis
+le serveur du moshaf (tâche 0) — la réponse timings **n'a aucun champ `audio`**. Aucune
+constante d'hôte n'est codée en dur dans l'application : si l'URL change, seul
+`scripts/ingest.mjs` est à corriger, puis `npm run ingest`.
 
 **Vérifier** : `npm test`, `npm run typecheck`, `npm run build`, puis `npm run dev` et contrôle
 manuel sourates 1, 36, 112.
@@ -2494,7 +2656,7 @@ import { silentWav } from "./wav";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const timings = (surah: number) =>
-  JSON.parse(readFileSync(join(ROOT, "src", "data", "timings", "118", `${surah}.json`), "utf8")) as {
+    JSON.parse(readFileSync(join(ROOT, "src", "data", "timings", "120", `${surah}.json`), "utf8")) as {
     durationMs: number;
     precision: string;
     ayat: [number, number, number][];
