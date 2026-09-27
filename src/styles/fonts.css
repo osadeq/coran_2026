@@ -1,0 +1,13 @@
+@font-face {
+  font-family: "KFGQPC Warsh";
+  src: url("../assets/fonts/kfgqpc_warsh_v30.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.ayah-text {
+  font-family: "KFGQPC Warsh", "Traditional Arabic", "Amiri", serif;
+  font-size: 1.75rem;
+  line-height: 2.1;
+}
