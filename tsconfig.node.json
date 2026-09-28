@@ -1,7 +1,10 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2023"],
+    // Les types de `@playwright/test` (via playwright-core) referencing des
+    // globals DOM (HTMLElement, SVGElement...), la lib DOM est requise des que
+    // `tests/e2e` est inclu ici.
+    "lib": ["ES2023", "DOM"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "composite": true,
