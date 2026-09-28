@@ -75,3 +75,51 @@ export const RECITERS_ENDPOINT = "https://www.mp3quran.net/api/v3/reciters?langu
 // `server` ci-dessus est donc autoritaire, pas un repli. La branche Warsh est obligatoire :
 // `server8.../husr/` sert la recitation Hafs et repond 502 de toute facon.
 export const AUDIO_BASE = "https://server13.mp3quran.net/husr/Rewayat-Warsh-A-n-Nafi";
+
+// Plan 2 (lecture par verset) — source audio `NNNMMM.mp3` (padding 3+3).
+// Les trois repertoires Warsh ci-dessous ont ete verifies le 2026-09-28 : HEAD sur
+// `<dir>/112001.mp3` -> 200 audio/mpeg, Accept-Ranges: bytes,
+// Access-Control-Allow-Origin: * (le dossier Abdul_Basit compte 6214 mp3, soit la
+// totalite des ayat du projet). Les autres noms guesses (`Abdul_Basit_128k`,
+// `ibrahim_aldosary_128k`, `yassin_al_jazaery_64k`) repondent 404 : ne pas les utiliser.
+export const EVERYAYAH_BASE = "https://everyayah.com/data/warsh";
+
+// `id` est un identifiant LOCAL (1..3), pas un moshaf mp3quran : la table `RECITERS`
+// du mode sourate-entiere reste la reference des timings (moshaf 120), inchangee ici.
+export const AYAH_RECITERS = Object.freeze([
+  Object.freeze({
+    id: 1,
+    dir: "warsh_Abdul_Basit_128kbps",
+    bitrate: 128,
+    label: "Abdul Basit — Warsh 128kbps",
+    labelFr: "Abdul Baasit (Warsh, 128 kbps)",
+    priority: 0,
+  }),
+  Object.freeze({
+    id: 2,
+    dir: "warsh_ibrahim_aldosary_128kbps",
+    bitrate: 128,
+    label: "Ibrahim Al-Dosari — Warsh 128kbps",
+    labelFr: "Ibrahim Al-Dosari (Warsh, 128 kbps)",
+    priority: 1,
+  }),
+  Object.freeze({
+    id: 3,
+    dir: "warsh_yassin_al_jazaery_64kbps",
+    bitrate: 64,
+    label: "Yassin Al-Jazaery — Warsh 64kbps",
+    labelFr: "Yassin Al-Jazaery (Warsh, 64 kbps)",
+    priority: 2,
+  }),
+]);
+
+export function selectAyahReciter(raw) {
+  if (raw === undefined || raw === "") return AYAH_RECITERS[0];
+  if (!/^\d+$/.test(String(raw))) {
+    throw new Error(`identifiant de recitant par-verset non numerique: ${raw}`);
+  }
+  const id = Number(raw);
+  const found = AYAH_RECITERS.find((r) => r.id === id);
+  if (!found) throw new Error(`recitant par-verset inconnu dans le manifeste: ${id}`);
+  return found;
+}

@@ -13,7 +13,14 @@ import {
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as QM from "quran-meta/warsh";
-import { KFGQPC, RECITERS, TIMINGS_ENDPOINT, AUDIO_BASE, selectReciter } from "./lib/manifest.mjs";
+import {
+  KFGQPC,
+  RECITERS,
+  AYAH_RECITERS,
+  TIMINGS_ENDPOINT,
+  AUDIO_BASE,
+  selectReciter,
+} from "./lib/manifest.mjs";
 import { md5Hex, sha256File } from "./lib/verify.mjs";
 import { IngestError, parseKfgqpc } from "./lib/parse-kfgqpc.mjs";
 import { compareWithQuranMeta } from "./lib/corroborate.mjs";
@@ -421,6 +428,9 @@ async function main() {
       juz: parsed.meta.juzCount,
     },
     reciters: RECITERS,
+    // Plan 2 : table des recitants du mode « un fichier par verset » (everyayah).
+    // Consomme par src/audio/use-ayah-player.ts via src/data/meta.json.
+    ayahReciters: AYAH_RECITERS,
     surahs: parsed.surahs.map((s) => ({
       n: s.n,
       en: s.en,

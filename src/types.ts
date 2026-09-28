@@ -52,3 +52,15 @@ export interface Reciter {
   labelFr: string;
   priority: number;
 }
+
+// Plan 2 (T-A) — recitant du mode « un fichier mp3 par verset » (everyayah).
+// Miroir TypeScript du champ `ayahReciters` de `meta.json` (genere depuis
+// `scripts/lib/manifest.mjs::AYAH_RECITERS`). `id` est local (1..3), pas un moshaf mp3quran.
+export interface AyahReciter {
+  id: number;
+  dir: string;
+  bitrate: number;
+  label: string;
+  labelFr: string;
+  priority: number;
+}
