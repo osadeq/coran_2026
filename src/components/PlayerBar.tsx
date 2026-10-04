@@ -51,6 +51,8 @@ export function PlayerBar({
     <div className="player" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 16px" }}>
       {reciters.length > 0 && (
         <select
+          id="reciter-select"
+          name="reciter"
           data-testid="player-reciter"
           aria-label="Récitant"
           value={reciter}

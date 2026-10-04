@@ -7,6 +7,8 @@ interface Props {
 export function SurahPicker({ surahs, value, onChange }: Props) {
   return (
     <select
+      id="surah-select"
+      name="surah"
       aria-label="Sourate"
       value={value}
       onChange={(e) => onChange(Number(e.currentTarget.value))}
