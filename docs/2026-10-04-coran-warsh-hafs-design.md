@@ -115,8 +115,10 @@ sont disjoints. C'est aussi pourquoi l'application fonctionne aujourd'hui :
 `kfgqpc_warsh_v30.json` est encode dans ce codepage prive, que la police Warsh decode
 exactement.
 
-**Decision : la pile Hafs est `Amiri Quran` seule** (60 Ko en woff2). QCF2001 est
-abandonne : il ne rend aucun des 69 glyphes du texte.
+**Decision : la pile Hafs est `Amiri Quran` seule** (TTF complet, 137 Ko). QCF2001 est
+abandonne : il ne rend aucun des 69 glyphes du texte. Le TTF complet est retenu plutot
+que le woff2 (60 Ko) : un sous-ensemble peut ne pas couvrir les 69 codepoints, et la
+couverture est precisement ce que l'on achete.
 
 ## 3. Decisions verrouillees (user)
 
@@ -209,7 +211,7 @@ changement de comportement.
 
 ## 7. Typographie
 
-`src/styles/fonts.css` : ajout de `@font-face` pour **Amiri Quran** (woff2, 60 Ko, dans
+`src/styles/fonts.css` : ajout de `@font-face` pour **Amiri Quran** (TTF, 137 Ko, dans
 `src/assets/fonts/`). La police Warsh actuelle reste declaree et inchangee.
 
 `src/styles/app.css` : `.ayah-text` recoit une pile par mode, portee par un attribut
