@@ -1,94 +1,164 @@
 /**
  * @vitest-environment jsdom
  */
-import { fireEvent, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { PlayerBar } from "../../src/components/PlayerBar";
+import { AYAH_RECITERS } from "../../scripts/lib/manifest.mjs";
 import type { SurahTimings } from "../../src/types";
 
-// Ecart au plan, exige par `npm run typecheck` (gate de la tache 12) : la fixule du plan
-// omit le champ `geometry`, rendu OBLIGATOIRE dans `SurahTimings` par le commit 2f991d2, et
-// son `precision: "exact"` etait inferé `string`. On annote donc en `SurahTimings` et on
-// ajoute `geometry: {}`. Le reste de la fixule est identique au plan.
-const timings: SurahTimings = {
-  surah: 112,
-  reciter: 120,
-  audioUrl: "https://example.test/112.mp3",
-  precision: "exact",
-  durationMs: 40_000,
-  ayat: [
-    [1, 0, 10_000],
-    [2, 10_000, 20_000],
-    [3, 20_000, 30_000],
-    [4, 30_000, 40_000],
-  ],
-  geometry: {},
-};
-
-const base = {
-  timings,
-  audioUrl: "https://example.test/112.mp3",
-  reciters: [],
-  reciter: 120,
-  onReciter: () => {},
-  onAyah: () => {},
-};
-
 describe("PlayerBar", () => {
-  it("affiche la duree totale", () => {
-    render(<PlayerBar {...base} />);
-    expect(screen.getByTestId("player-duration")).toHaveTextContent("0:40");
-  });
+  const dummyTimings: SurahTimings = {
+    surah: 112,
+    reciter: 120,
+    audioUrl: "",
+    precision: "estimated",
+    durationMs: 12000,
+    ayat: [
+      [1, 0, 3000],
+      [2, 3000, 6000],
+      [3, 6000, 9000],
+      [4, 9000, 12000],
+    ],
+    geometry: {},
+  };
 
-  it("bascule lecture / pause", async () => {
-    const user = userEvent.setup();
-    const play = vi.fn().mockResolvedValue(undefined);
-    render(<PlayerBar {...base} play={play} />);
-    await user.click(screen.getByRole("button", { name: /lire/i }));
-    expect(play).toHaveBeenCalledTimes(1);
-  });
-
-  // Un `input[type=range]` n'est pas un champ texte : `userEvent.type` n'y fait
-  // rien. On passe par un evenement `change`, et l'interface expose des SECONDES
-  // alors que `seek` recoit des MILLISECONDES. L'assertion doit donc porter sur
-  // 15000, pas 15.
-  it("convertit la position en secondes vers des millisecondes", () => {
-    const seek = vi.fn();
-    render(<PlayerBar {...base} seek={seek} />);
-    fireEvent.change(screen.getByTestId("player-seek"), { target: { value: "15" } });
-    expect(seek).toHaveBeenCalledWith(15_000);
-  });
-
-  it("remet la position a zero quand la sourate change", () => {
-    const { rerender } = render(<PlayerBar {...base} />);
-    fireEvent.change(screen.getByTestId("player-seek"), { target: { value: "15" } });
-    expect(screen.getByTestId("player-position")).toHaveTextContent("0:15");
-
-    rerender(<PlayerBar {...base} audioUrl="https://example.test/113.mp3" />);
-    expect(screen.getByTestId("player-position")).toHaveTextContent("0:00");
-  });
-
-  it("signale une precision non exacte", () => {
+  it("affiche la position '1 / 4' et le sélecteur de récitant par défaut sur Abdul Basit", () => {
+    const onReciter = vi.fn();
     render(
       <PlayerBar
-        {...base}
-        timings={{ ...timings, precision: "estimated" }}
-      />,
+        reciters={AYAH_RECITERS as any}
+        reciter={1}
+        onReciter={onReciter}
+        playing={false}
+        currentIndex={0}
+        totalAyat={4}
+        repeat={false}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onPrev={vi.fn()}
+        onNext={vi.fn()}
+        onToggleRepeat={vi.fn()}
+        timings={dummyTimings}
+      />
     );
-    expect(screen.getByText(/estim/i)).toBeTruthy();
+
+    expect(screen.getByTestId("player-position")).toHaveTextContent("1 / 4");
+
+    const select = screen.getByTestId("player-reciter") as HTMLSelectElement;
+    expect(select.value).toBe("1");
+    expect(select.options).toHaveLength(3);
+
+    fireEvent.change(select, { target: { value: "2" } });
+    expect(onReciter).toHaveBeenCalledWith(2);
   });
 
-  // La sourate 2 pese ~95 Mo. Toute degrade vers `fetch` + `blob:` tuerait l'onglet et
-  // le mobile. Le streaming par requetes `Range` est assure nativement par <audio src> ;
-  // ce test verrouille le choix, il n'a pas a simuler le navigateur.
-  it("branche l'audio en streaming, sans telechargement ni blob", () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch");
-    render(<PlayerBar {...base} />);
-    const audio = screen.getByTestId("player-audio") as HTMLAudioElement;
-    expect(audio.getAttribute("src")).toBe("https://example.test/112.mp3");
-    expect(audio.getAttribute("preload")).toBe("metadata");
-    expect(audio.getAttribute("src") ?? "").not.toMatch(/^blob:/);
-    expect(fetchSpy).not.toHaveBeenCalled();
+  it("gère les clics sur play, prev, next et repeat", () => {
+    const onPlay = vi.fn();
+    const onPause = vi.fn();
+    const onPrev = vi.fn();
+    const onNext = vi.fn();
+    const onToggleRepeat = vi.fn();
+
+    const { rerender } = render(
+      <PlayerBar
+        reciters={AYAH_RECITERS as any}
+        reciter={1}
+        onReciter={vi.fn()}
+        playing={false}
+        currentIndex={0}
+        totalAyat={4}
+        repeat={false}
+        onPlay={onPlay}
+        onPause={onPause}
+        onPrev={onPrev}
+        onNext={onNext}
+        onToggleRepeat={onToggleRepeat}
+      />
+    );
+
+    const playBtn = screen.getByTestId("player-play");
+    expect(playBtn).toHaveAttribute("aria-label", "Lire");
+    fireEvent.click(playBtn);
+    expect(onPlay).toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId("player-next"));
+    expect(onNext).toHaveBeenCalled();
+
+    fireEvent.click(screen.getByTestId("player-prev"));
+    expect(onPrev).toHaveBeenCalled();
+
+    const repeatBtn = screen.getByTestId("player-repeat");
+    expect(repeatBtn).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(repeatBtn);
+    expect(onToggleRepeat).toHaveBeenCalled();
+
+    rerender(
+      <PlayerBar
+        reciters={AYAH_RECITERS as any}
+        reciter={1}
+        onReciter={vi.fn()}
+        playing={true}
+        currentIndex={1}
+        totalAyat={4}
+        repeat={true}
+        onPlay={onPlay}
+        onPause={onPause}
+        onPrev={onPrev}
+        onNext={onNext}
+        onToggleRepeat={onToggleRepeat}
+      />
+    );
+
+    expect(screen.getByTestId("player-play")).toHaveAttribute("aria-label", "Pause");
+    expect(screen.getByTestId("player-position")).toHaveTextContent("2 / 4");
+    expect(screen.getByTestId("player-repeat")).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("affiche le badge 'durées estimées' quand la précision n'est pas exact", () => {
+    const { rerender } = render(
+      <PlayerBar
+        reciters={AYAH_RECITERS as any}
+        reciter={1}
+        onReciter={vi.fn()}
+        playing={false}
+        currentIndex={0}
+        totalAyat={4}
+        repeat={false}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onPrev={vi.fn()}
+        onNext={vi.fn()}
+        onToggleRepeat={vi.fn()}
+        timings={dummyTimings}
+      />
+    );
+
+    expect(screen.getByText("durées estimées")).toBeInTheDocument();
+
+    const exactTimings: SurahTimings = {
+      ...dummyTimings,
+      precision: "exact",
+    };
+
+    rerender(
+      <PlayerBar
+        reciters={AYAH_RECITERS as any}
+        reciter={1}
+        onReciter={vi.fn()}
+        playing={false}
+        currentIndex={0}
+        totalAyat={4}
+        repeat={false}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onPrev={vi.fn()}
+        onNext={vi.fn()}
+        onToggleRepeat={vi.fn()}
+        timings={exactTimings}
+      />
+    );
+
+    expect(screen.queryByText("durées estimées")).not.toBeInTheDocument();
   });
 });

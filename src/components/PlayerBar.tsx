@@ -1,77 +1,61 @@
-import { useEffect, useState } from "react";
-import type { Reciter, SurahTimings, TimingRow } from "../types";
-import { useSyncEngine } from "../sync/use-sync-engine";
+import React from "react";
+import type { AyahReciter, SurahTimings } from "../types";
 
-interface Props {
-  timings: SurahTimings | null;
-  audioUrl: string;
-  reciters: Reciter[];
+export interface PlayerBarProps {
+  reciters: AyahReciter[];
   reciter: number;
   onReciter: (id: number) => void;
-  onAyah: (ayah: number | null) => void;
-  play?: () => Promise<void>;
-  pause?: () => void;
-  seek?: (ms: number) => void;
+  playing: boolean;
+  currentIndex: number;
+  totalAyat: number;
+  repeat: boolean;
+  onPlay: () => void;
+  onPause: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+  onToggleRepeat: () => void;
+  timings?: SurahTimings | null;
 }
 
-const mmss = (ms: number) => {
-  const total = Math.max(0, Math.ceil(ms / 1000));
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-};
+export function PlayerBar({
+  reciters,
+  reciter,
+  onReciter,
+  playing,
+  currentIndex,
+  totalAyat,
+  repeat,
+  onPlay,
+  onPause,
+  onPrev,
+  onNext,
+  onToggleRepeat,
+  timings,
+}: PlayerBarProps) {
+  const currentVerseNum = totalAyat > 0 ? currentIndex + 1 : 0;
 
-// Reference stable : `useSyncEngine` liste `rows` dans ses dependances, donc un
-// `[]` recree a chaque rendu demonterait la boucle rAF et reseterait `last`,
-// ce qui re-declenche `onAyah` en boucle.
-const NO_ROWS: readonly TimingRow[] = [];
-
-export function PlayerBar(props: Props) {
-  const { timings, audioUrl, reciters, reciter, onReciter, onAyah } = props;
-  const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
-  const [position, setPosition] = useState(0);
-  const [playing, setPlaying] = useState(false);
-
-  useSyncEngine(audioEl, timings?.ayat ?? NO_ROWS, onAyah);
-
-  // Changer de sourate doit remettre le curseur a zero, sinon on affiche la
-  // position d'un audio precedent sur le nouvel audio.
-  useEffect(() => {
-    setPosition(0);
-    setPlaying(false);
-  }, [audioUrl]);
-
-  useEffect(() => {
-    const el = audioEl;
-    if (!el) return;
-    const onTime = () => setPosition(el.currentTime * 1000);
-    el.addEventListener("timeupdate", onTime);
-    return () => el.removeEventListener("timeupdate", onTime);
-  }, [audioEl]);
-
-  const doPlay = async () => {
-    if (props.play) await props.play();
-    else if (audioEl) await audioEl.play();
-    setPlaying(true);
+  const calculateProgressPercent = (): number => {
+    if (!totalAyat) return 0;
+    if (timings && timings.ayat && timings.ayat.length > 0) {
+      const totalDuration = timings.durationMs || 1;
+      const currentTiming = timings.ayat[currentIndex];
+      const startMs = currentTiming ? currentTiming[1] : (currentIndex / totalAyat) * totalDuration;
+      return Math.min(100, Math.max(0, Math.round((startMs / totalDuration) * 100)));
+    }
+    return Math.min(100, Math.max(0, Math.round((currentVerseNum / totalAyat) * 100)));
   };
-  const doPause = () => {
-    if (props.pause) props.pause();
-    else audioEl?.pause();
-    setPlaying(false);
-  };
-  // Le range expose des SECONDES (step=1) ; `seek` recoit des MILLISECONDES.
-  const doSeek = (seconds: number) => {
-    const ms = Math.round(seconds * 1000);
-    if (props.seek) props.seek(ms);
-    else if (audioEl) audioEl.currentTime = seconds;
-    setPosition(ms);
-  };
+
+  const progressPercent = calculateProgressPercent();
 
   return (
-    <div className="player">
-      {/* `ref` en callback : c'est la seule facon d'obtenir un element audio
-          stable, un `useRef` n'est pas reactive au premier rendu. */}
-      <audio ref={setAudioEl} src={audioUrl} preload="metadata" data-testid="player-audio" />
-      {reciters.length > 1 && (
-        <select aria-label="Récitant" value={reciter} onChange={(e) => onReciter(Number(e.currentTarget.value))}>
+    <div className="player" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 16px" }}>
+      {reciters.length > 0 && (
+        <select
+          data-testid="player-reciter"
+          aria-label="Récitant"
+          value={reciter}
+          onChange={(e) => onReciter(Number(e.currentTarget.value))}
+        >
           {reciters.map((r) => (
             <option key={r.id} value={r.id}>
               {r.labelFr}
@@ -79,24 +63,68 @@ export function PlayerBar(props: Props) {
           ))}
         </select>
       )}
-      <button type="button" onClick={playing ? doPause : doPlay} aria-label={playing ? "Pause" : "Lire"}>
+
+      <button
+        data-testid="player-prev"
+        type="button"
+        onClick={onPrev}
+        aria-label="Précédent"
+      >
+        ⏮
+      </button>
+
+      <button
+        data-testid="player-play"
+        type="button"
+        onClick={playing ? onPause : onPlay}
+        aria-label={playing ? "Pause" : "Lire"}
+      >
         {playing ? "❚❚" : "▶"}
       </button>
-      <input
-        data-testid="player-seek"
-        type="range"
-        min={0}
-        max={(timings?.durationMs ?? 0) / 1000}
-        step={1}
-        value={Math.floor(position / 1000)}
-        onChange={(e) => doSeek(Number(e.currentTarget.value))}
-        aria-label="Position"
-      />
-      <span data-testid="player-position">{mmss(position)}</span>
-      <span aria-hidden="true">/</span>
-      <span data-testid="player-duration">{mmss(timings?.durationMs ?? 0)}</span>
+
+      <button
+        data-testid="player-next"
+        type="button"
+        onClick={onNext}
+        aria-label="Suivant"
+      >
+        ⏭
+      </button>
+
+      <button
+        data-testid="player-repeat"
+        type="button"
+        onClick={onToggleRepeat}
+        aria-pressed={repeat}
+        aria-label="Répéter"
+      >
+        🔁
+      </button>
+
+      <div data-testid="player-position">
+        {totalAyat > 0 ? `${currentVerseNum} / ${totalAyat}` : "—"}
+      </div>
+
+      <div
+        data-testid="player-progress"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={progressPercent}
+        style={{ flex: 1, background: "#ccc", height: "8px", borderRadius: "4px", overflow: "hidden" }}
+      >
+        <div
+          style={{
+            width: `${progressPercent}%`,
+            height: "100%",
+            background: "#0070f3",
+            transition: "width 0.2s ease",
+          }}
+        />
+      </div>
+
       {timings && timings.precision !== "exact" && (
-        <span className="badge">timings estimés</span>
+        <span className="badge">durées estimées</span>
       )}
     </div>
   );
