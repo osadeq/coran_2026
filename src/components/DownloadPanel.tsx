@@ -53,14 +53,13 @@ export const DownloadPanel: React.FC<DownloadPanelProps> = ({
   const estimatedMb = progress ? ((progress.total * 402) / 1024).toFixed(1) : "0";
 
   return (
-    <div
-      className="download-panel"
-      style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}
-    >
+    <div className="download-panel">
       <button
         data-testid="download-surah"
         disabled={downloading}
         onClick={handleDownloadSurah}
+        aria-label={`Télécharger toute la sourate ${surah.n}`}
+        title={`Télécharger toute la sourate ${surah.n} pour écoute hors ligne`}
       >
         Télécharger sourate {surah.n}
       </button>
@@ -69,12 +68,14 @@ export const DownloadPanel: React.FC<DownloadPanelProps> = ({
         data-testid="download-juz"
         disabled={downloading}
         onClick={handleDownloadJuz}
+        aria-label={`Télécharger le juz ${currentJuz}`}
+        title={`Télécharger le juz ${currentJuz} pour écoute hors ligne`}
       >
         Télécharger juz {currentJuz}
       </button>
 
       {progress && (
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        <div className="download-progress">
           <progress
             data-testid="download-progress"
             value={progress.done}
@@ -89,7 +90,7 @@ export const DownloadPanel: React.FC<DownloadPanelProps> = ({
         </div>
       )}
 
-      {error && <span className="download-error" style={{ color: "red" }}>{error}</span>}
+      {error && <span className="download-error">{error}</span>}
     </div>
   );
 };

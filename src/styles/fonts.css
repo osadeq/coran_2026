@@ -6,8 +6,6 @@
   font-display: swap;
 }
 
-.ayah-text {
-  font-family: "KFGQPC Warsh", "Traditional Arabic", "Amiri", serif;
-  font-size: 1.75rem;
-  line-height: 2.1;
-}
+/* La typo du texte du Coran vit dans app.css, cote theme : cette feuille ne contient
+ * que la police, ce qui evite que deux feuilles se disputent `.ayah-text` selon
+ * l'ordre d'import. */

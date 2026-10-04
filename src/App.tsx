@@ -23,13 +23,6 @@ export function App() {
   const surah = data.surahs[state.surah - 1];
   const [timings, setTimings] = useState<SurahTimings | null>(null);
 
-  const player = useAyahPlayer({
-    reciterId: state.reciter,
-    surah: state.surah,
-    ayahCount: surah.a.length,
-    onAyah: (idx) => setAyah(idx + 1),
-  });
-
   useEffect(() => {
     let cancelled = false;
     const load = timingModules[`./data/timings/120/${state.surah}.json`];
@@ -45,6 +38,14 @@ export function App() {
     };
   }, [state.surah]);
 
+  const player = useAyahPlayer({
+    reciterId: state.reciter,
+    surah: state.surah,
+    ayahCount: surah.a.length,
+    timings,
+    onAyah: (idx) => setAyah(idx + 1),
+  });
+
   const activeReciter = useMemo(() => {
     return selectAyahReciter(state.reciter);
   }, [state.reciter]);
@@ -58,39 +59,41 @@ export function App() {
 
   return (
     <>
-      <header>
-        <h1>Coran — Warsh</h1>
-        <SurahPicker surahs={data.surahs} value={state.surah} onChange={setSurah} />
-      </header>
-      <main>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 dir="rtl" lang="ar">
-            {surah.ar}
-          </h2>
-          <DownloadPanel
-            surah={surah}
-            ayahIndex={currentAyahIndex}
-            reciter={activeReciter}
-            quran={data}
-          />
+      <header className="app-header">
+        <div className="app-header-top">
+          <h1 className="app-title">Coran — Warsh</h1>
+          <div className="app-header-tools">
+            <SurahPicker surahs={data.surahs} value={state.surah} onChange={setSurah} />
+            <DownloadPanel
+              surah={surah}
+              ayahIndex={currentAyahIndex}
+              reciter={activeReciter}
+              quran={data}
+            />
+          </div>
         </div>
+        <PlayerBar
+          reciters={ayahReciters}
+          reciter={state.reciter}
+          onReciter={setReciter}
+          playing={player.playing}
+          currentIndex={player.index}
+          totalAyat={surah.a.length}
+          repeat={player.repeat}
+          onPlay={() => void player.play()}
+          onPause={() => void player.pause()}
+          onPrev={() => void player.prev()}
+          onNext={() => void player.next()}
+          onToggleRepeat={() => player.setRepeat(!player.repeat)}
+          timings={timings}
+        />
+      </header>
+      <main className="app-main">
+        <h2 dir="rtl" lang="ar" className="surah-heading">
+          {surah.ar}
+        </h2>
         <AyahList surah={surah} activeAyah={state.ayah} onSelect={handleSelectAyah} />
       </main>
-      <PlayerBar
-        reciters={ayahReciters}
-        reciter={state.reciter}
-        onReciter={setReciter}
-        playing={player.playing}
-        currentIndex={player.index}
-        totalAyat={surah.a.length}
-        repeat={player.repeat}
-        onPlay={() => void player.play()}
-        onPause={() => void player.pause()}
-        onPrev={() => void player.prev()}
-        onNext={() => void player.next()}
-        onToggleRepeat={() => player.setRepeat(!player.repeat)}
-        timings={timings}
-      />
     </>
   );
 }

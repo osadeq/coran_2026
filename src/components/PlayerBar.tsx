@@ -48,13 +48,14 @@ export function PlayerBar({
   const progressPercent = calculateProgressPercent();
 
   return (
-    <div className="player" style={{ display: "flex", alignItems: "center", gap: "12px", padding: "8px 16px" }}>
+    <div className="player">
       {reciters.length > 0 && (
         <select
           id="reciter-select"
           name="reciter"
           data-testid="player-reciter"
           aria-label="Récitant"
+          title="Récitant"
           value={reciter}
           onChange={(e) => onReciter(Number(e.currentTarget.value))}
         >
@@ -71,6 +72,7 @@ export function PlayerBar({
         type="button"
         onClick={onPrev}
         aria-label="Précédent"
+        title="Verset précédent"
       >
         ⏮
       </button>
@@ -80,6 +82,7 @@ export function PlayerBar({
         type="button"
         onClick={playing ? onPause : onPlay}
         aria-label={playing ? "Pause" : "Lire"}
+        title={playing ? "Pause" : "Lire"}
       >
         {playing ? "❚❚" : "▶"}
       </button>
@@ -89,6 +92,7 @@ export function PlayerBar({
         type="button"
         onClick={onNext}
         aria-label="Suivant"
+        title="Verset suivant"
       >
         ⏭
       </button>
@@ -99,30 +103,24 @@ export function PlayerBar({
         onClick={onToggleRepeat}
         aria-pressed={repeat}
         aria-label="Répéter"
+        title="Répéter la sourate"
       >
         🔁
       </button>
 
-      <div data-testid="player-position">
+      <div className="player-position" data-testid="player-position">
         {totalAyat > 0 ? `${currentVerseNum} / ${totalAyat}` : "—"}
       </div>
 
       <div
+        className="player-progress"
         data-testid="player-progress"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progressPercent}
-        style={{ flex: 1, background: "#ccc", height: "8px", borderRadius: "4px", overflow: "hidden" }}
       >
-        <div
-          style={{
-            width: `${progressPercent}%`,
-            height: "100%",
-            background: "#0070f3",
-            transition: "width 0.2s ease",
-          }}
-        />
+        <div className="player-progress-fill" style={{ width: `${progressPercent}%` }} />
       </div>
 
       {timings && timings.precision !== "exact" && (

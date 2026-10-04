@@ -10,6 +10,7 @@ export function SurahPicker({ surahs, value, onChange }: Props) {
       id="surah-select"
       name="surah"
       aria-label="Sourate"
+      title="Sourate"
       value={value}
       onChange={(e) => onChange(Number(e.currentTarget.value))}
     >

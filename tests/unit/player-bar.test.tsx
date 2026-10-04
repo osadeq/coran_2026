@@ -161,4 +161,57 @@ describe("PlayerBar", () => {
 
     expect(screen.queryByText("durées estimées")).not.toBeInTheDocument();
   });
+
+  // Point 3 de correction.txt : un bouton sans `title` n'explique rien au survol —
+  // sur des icones emoji comme ⏮ ▶ ⏭, c'est la seule legende lisible.
+  const BOUTONS = ["player-prev", "player-play", "player-next", "player-repeat"];
+
+  it("donne un title non vide a chaque bouton et au selecteur de recitant", () => {
+    render(
+      <PlayerBar
+        reciters={AYAH_RECITERS as any}
+        reciter={1}
+        onReciter={vi.fn()}
+        playing={false}
+        currentIndex={0}
+        totalAyat={4}
+        repeat={false}
+        onPlay={vi.fn()}
+        onPause={vi.fn()}
+        onPrev={vi.fn()}
+        onNext={vi.fn()}
+        onToggleRepeat={vi.fn()}
+        timings={dummyTimings}
+      />,
+    );
+
+    for (const id of BOUTONS) {
+      const title = screen.getByTestId(id).getAttribute("title");
+      expect(title, `title manquant ou vide sur ${id}`).toBeTruthy();
+    }
+    expect(screen.getByTestId("player-reciter").getAttribute("title")).toBeTruthy();
+  });
+
+  it("le title du bouton lecture suit l'etat (Lire / Pause)", () => {
+    const props = {
+      reciters: AYAH_RECITERS as any,
+      reciter: 1,
+      onReciter: vi.fn(),
+      currentIndex: 0,
+      totalAyat: 4,
+      onPlay: vi.fn(),
+      onPause: vi.fn(),
+      onPrev: vi.fn(),
+      onNext: vi.fn(),
+      onToggleRepeat: vi.fn(),
+      timings: dummyTimings,
+    };
+    const { rerender } = render(
+      <PlayerBar {...props} playing={false} repeat={false} />,
+    );
+    expect(screen.getByTestId("player-play")).toHaveAttribute("title", "Lire");
+
+    rerender(<PlayerBar {...props} playing repeat={false} />);
+    expect(screen.getByTestId("player-play")).toHaveAttribute("title", "Pause");
+  });
 });
