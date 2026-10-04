@@ -5,109 +5,112 @@ import { fileURLToPath } from "node:url";
 import { silentWav } from "./wav";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const timings = (surah: number) =>
-    JSON.parse(readFileSync(join(ROOT, "src", "data", "timings", "120", `${surah}.json`), "utf8")) as {
-    durationMs: number;
-    precision: string;
-    ayat: [number, number, number][];
-  };
+const getTimings = (surah: number) =>
+  JSON.parse(
+    readFileSync(join(ROOT, "src", "data", "timings", "120", `${surah}.json`), "utf8")
+  ) as { precision: string };
 
-// Le motif doit survivre au changement d'hote et de repertoire de la tache 0
-// (`Rewayat-Warsh-A-n-Nafi/112.mp3` ne passe PAS sous `**/husr/*.mp3`).
-//
-// Ecart #6 vs le plan : le `route.fulfill` 200 du plan rend l'audio NON
-// navigable. Chromium, sur un `src` media, requiert des octets par Range
-// (`Range: bytes=N-`) des qu'on seek ; une reponse 200-full-corps a une
-// requete range est invalide -> l'element garde `seekable = [0-0]` et
-// n'importe quel `currentTime = N` est ramene a 0 (`seeking@0`/`seeked@0`,
-// sonde e2e 2026-09-28). On sert donc un 206 avec `Content-Range` quand la
-// requete porte un Range, comme le ferait le vrai serveur mp3quran.
-async function stubAudio(page: import("@playwright/test").Page, surah: number) {
-  const wav = silentWav(timings(surah).durationMs);
+async function stubVerseAudio(page: import("@playwright/test").Page) {
+  const shortWav = silentWav(300);
   await page.route("**/*.mp3", (route) => {
-    const range = route.request().headers()["range"];
-    if (!range) {
-      return route.fulfill({
-        status: 200,
-        contentType: "audio/wav",
-        headers: { "Accept-Ranges": "bytes" },
-        body: wav,
-      });
-    }
-    const m = /bytes=(\d+)-(\d*)/.exec(range);
-    const start = m ? Number(m[1]) : 0;
-    const end = m && m[2] ? Math.min(Number(m[2]), wav.length - 1) : wav.length - 1;
     return route.fulfill({
-      status: 206,
+      status: 200,
       contentType: "audio/wav",
-      headers: {
-        "Accept-Ranges": "bytes",
-        "Content-Range": `bytes ${start}-${end}/${wav.length}`,
-      },
-      body: wav.subarray(start, end + 1),
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: shortWav,
     });
   });
 }
 
-/**
- * `fill()` est invalide sur `input[type=range]`. On ecrase la valeur via le
- * setter natif, sinon React ignore l'evenement (il compare a sa valeur
- * memorisee), puis on dispatche `input` et `change`.
- */
-async function seekTo(page: import("@playwright/test").Page, seconds: number) {
-  await page.getByTestId("player-seek").evaluate((el, s) => {
-    const input = el as HTMLInputElement;
-    const setter = Object.getOwnPropertyDescriptor(
-      window.HTMLInputElement.prototype,
-      "value",
-    )!.set!;
-    setter.call(input, String(s));
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    input.dispatchEvent(new Event("change", { bubbles: true }));
-  }, seconds);
-}
-
-async function waitForMetadata(page: import("@playwright/test").Page) {
-  await page.getByTestId("player-audio").evaluate(
-    (el) =>
-      new Promise<void>((resolve) => {
-        const audio = el as HTMLAudioElement;
-        if (audio.readyState >= 1) return resolve();
-        audio.addEventListener("loadedmetadata", () => resolve(), { once: true });
-        audio.addEventListener("error", () => resolve(), { once: true });
-      }),
-  );
-}
-
-test.describe("lecteur", () => {
+test.describe("lecteur par verset", () => {
   test("affiche la sourate 112 en RTL avec ses 4 ayahs", async ({ page }) => {
-    await stubAudio(page, 112);
+    await stubVerseAudio(page);
     await page.goto("/");
     await page.selectOption('select[aria-label="Sourate"]', "112");
     await expect(page.locator(".ayah")).toHaveCount(4);
     await expect(page.getByTestId("ayah-1-text")).toHaveAttribute("dir", "rtl");
   });
 
-  test("surligne l'ayah correspondant a la position", async ({ page }) => {
-    await stubAudio(page, 112);
+  test("avance automatiquement du verset 1 au verset 4 lors de la lecture", async ({ page }) => {
+    await stubVerseAudio(page);
     await page.goto("/");
     await page.selectOption('select[aria-label="Sourate"]', "112");
-    await waitForMetadata(page);
 
-    const target = timings(112).ayat[2]; // 3e ayah
-    const seconds = (target[1] + 200) / 1000;
-    await seekTo(page, seconds);
+    await page.getByTestId("player-play").click();
 
-    await expect(page.getByTestId(`ayah-${target[0]}`)).toHaveAttribute("data-active", "true");
-    await expect(page.getByTestId("ayah-1")).toHaveAttribute("data-active", "false");
+    await expect(page.getByTestId("ayah-1")).toHaveAttribute("data-active", "true");
+
+    await expect(page.getByTestId("ayah-4")).toHaveAttribute("data-active", "true", { timeout: 10000 });
+
+    await expect(page.getByTestId("player-play")).toHaveAttribute("aria-label", "Lire", { timeout: 5000 });
   });
 
-  // Les deux branches assertent : le test ne peut pas devenir vide.
-  test("le badge est present exactement quand la precision n'est pas exacte", async ({ page }) => {
-    const precision = timings(7).precision;
-    await stubAudio(page, 7);
+  test("centrage du verset actif dans le viewport", async ({ page }) => {
+    await stubVerseAudio(page);
     await page.goto("/");
-    await page.selectOption('select[aria-label="Sourate"]', "7");
+    await page.selectOption('select[aria-label="Sourate"]', "2");
+
+    await page.getByTestId("ayah-40").click();
+    await expect(page.getByTestId("ayah-40")).toHaveAttribute("data-active", "true");
+
+    const box = await page.getByTestId("ayah-40").boundingBox();
+    const viewportSize = page.viewportSize();
+    if (box && viewportSize) {
+      const centerY = box.y + box.height / 2;
+      const targetCenter = viewportSize.height / 2;
+      expect(Math.abs(centerY - targetCenter)).toBeLessThan(150);
+    }
+  });
+
+  test("mode répétition (repeat)", async ({ page }) => {
+    await stubVerseAudio(page);
+    await page.goto("/");
+    await page.selectOption('select[aria-label="Sourate"]', "112");
+
+    await page.getByTestId("player-repeat").click();
+    await expect(page.getByTestId("player-repeat")).toHaveAttribute("aria-pressed", "true");
+
+    await page.getByTestId("ayah-4").click();
+    await page.getByTestId("player-play").click();
+
+    await expect(page.getByTestId("ayah-4")).toHaveAttribute("data-active", "true");
+    await page.waitForTimeout(600);
+    await expect(page.getByTestId("ayah-4")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("player-play")).toHaveAttribute("aria-label", "Pause");
+  });
+
+  test("lecture hors-ligne via le cache Storage après téléchargement", async ({ page }) => {
+    await stubVerseAudio(page);
+    await page.goto("/");
+    await page.selectOption('select[aria-label="Sourate"]', "112");
+
+    await page.getByTestId("download-surah").click();
+    await expect(page.getByTestId("download-progress")).toBeVisible();
+    await expect(page.getByTestId("download-progress")).toHaveAttribute("aria-valuenow", "4", { timeout: 10000 });
+
+    let networkMp3Requests = 0;
+    await page.route("**/*.mp3", (route) => {
+      networkMp3Requests++;
+      return route.abort();
+    });
+
+    await page.reload();
+    await page.selectOption('select[aria-label="Sourate"]', "112");
+
+    networkMp3Requests = 0;
+
+    await page.getByTestId("player-play").click();
+    await expect(page.getByTestId("ayah-1")).toHaveAttribute("data-active", "true");
+    await expect(page.getByTestId("ayah-2")).toHaveAttribute("data-active", "true", { timeout: 5000 });
+
+    expect(networkMp3Requests).toBe(0);
+  });
+
+  test("le badge durées estimées est présent uniquement quand la précision n'est pas exacte", async ({ page }) => {
+    const precision = getTimings(112).precision;
+    await stubVerseAudio(page);
+    await page.goto("/");
+    await page.selectOption('select[aria-label="Sourate"]', "112");
 
     const badge = page.locator(".badge");
     if (precision === "exact") {
