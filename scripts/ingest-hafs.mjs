@@ -81,15 +81,25 @@ async function main() {
       await sleep(100);
     }
 
+    // Le compte doit etre exact avant ecriture : une reponse tronquee ne doit pas
+    // deviner un corpus court.
+    const expected = surahCounts[String(n)];
+    if (allVerses.length !== expected) {
+      throw new Error(
+        `sourate ${n} : ${allVerses.length} versets obtenus, ${expected} attendus`
+      );
+    }
+
     const ayas = [];
     for (let v = 0; v < allVerses.length; v += 1) {
       const verse = allVerses[v];
       const juz = verse.juz_number;
       const pageNum = verse.page_number;
       const text = verse.text_uthmani;
-      if (typeof text === "string" && text.length > 0) {
-        ayas.push([juz, pageNum, text]);
+      if (typeof text !== "string" || text.length === 0) {
+        throw new Error(`sourate ${n} verset ${v + 1} : text_uthmani absent ou vide`);
       }
+      ayas.push([juz, pageNum, text]);
     }
     const meta = surahMeta.find((m) => m.n === n) || { n, en: "", ar: "" };
     surahs.push({

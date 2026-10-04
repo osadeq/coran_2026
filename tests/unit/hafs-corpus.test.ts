@@ -12,9 +12,6 @@ const readJson = (relative: string) => {
   return JSON.parse(raw) as unknown;
 };
 
-const corpusPath = resolve(root, "src/data/quran-hafs.json");
-const countsPath = resolve(root, "scripts/fixtures/hafs-surah-counts.json");
-
 describe("corpus Hafs", () => {
   it("le corpus Hafs respecte les assertions requises", () => {
     const corpus = readJson("src/data/quran-hafs.json") as any;
