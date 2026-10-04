@@ -3,9 +3,13 @@
  */
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { AyahList } from "../../src/components/AyahList";
 import { SurahPicker } from "../../src/components/SurahPicker";
+
+beforeEach(() => {
+  Element.prototype.scrollIntoView = vi.fn();
+});
 
 // Fixule = texte reel de la sourate 112 dans src/data/quran-warsh.json (commit 563e5b8).
 // Le plan utilisait un texte de type Hafs et assertait ࣰ, ABSENT meme de sa propre
