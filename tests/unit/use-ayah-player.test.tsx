@@ -75,6 +75,9 @@ function makeRig(ayahCount = 4) {
           reciterId: 1,
           surah: 112,
           ayahCount,
+          // Plan 3, T6 : la riwaya participe a la cle de redemarrage, donc le
+          // helper la fournit — un test peut l'ecarter pour simuler la bascule.
+          riwaya: "warsh",
           AudioContextClass,
           fetchBytes,
           onAyah,
@@ -362,6 +365,67 @@ describe("useAyahPlayer sur l'ordonnanceur a relais", () => {
       expect(AudioContextClass).not.toHaveBeenCalled();
       expect(result.current.playing).toBe(false);
       expect(fetchBytes).not.toHaveBeenCalled();
+    });
+  });
+
+  // Plan 3, T6 — 64 sourates sur 114 ont le meme nombre de versets dans les deux
+  // corpus : sans la riwaya dans la cle de redemarrage, un changement de mode
+  // laisserait `memeLecture` vrai, donc la position serait conservee et la lecture
+  // ne redemarrerait pas — l'inverse du comportement demande. La sourate 1
+  // (7 versets des deux cotes) est le cas de test le plus net ; nommer la
+  // condition dans le titre empeche de « simplifier » le test plus tard en
+  // choisissant une sourate ou les comptes different.
+  describe("changement de riwaya", () => {
+    it("repart du verset 1 quand la riwaya change sur une sourate de meme longueur", async () => {
+      const { fetchBytes, render } = makeRig(7); // sourate 1 : 7 versets dans les deux corpus
+      const { result, rerender } = render({ surah: 1 });
+
+      await act(async () => {
+        await result.current.play();
+      });
+      await settle();
+      await act(async () => {
+        await result.current.seekAyah(5);
+      });
+      await settle();
+      expect(result.current.index).toBe(4);
+
+      // Sans ceci, le verset 1 aurait deja ete demande au demarrage et
+      // l'assertion suivante passerait meme sans redemarrage.
+      fetchBytes.mockClear();
+      rerender({ surah: 1, riwaya: "hafs" });
+      await settle();
+      await settle();
+
+      expect(result.current.index).toBe(0);
+      expect(fetchBytes).toHaveBeenCalledWith(expect.stringContaining("001001.mp3"));
+    });
+
+    it("repart du verset 1 en pause quand la riwaya change sur une sourate de meme longueur", async () => {
+      const { fetchBytes, render } = makeRig(7);
+      const { result, rerender } = render({ surah: 1 });
+
+      await act(async () => {
+        await result.current.play();
+      });
+      await settle();
+      await act(async () => {
+        await result.current.seekAyah(5);
+      });
+      await settle();
+      await act(async () => {
+        await result.current.pause();
+      });
+      expect(result.current.index).toBe(4);
+      expect(result.current.playing).toBe(false);
+
+      fetchBytes.mockClear();
+      rerender({ surah: 1, riwaya: "hafs" });
+      await settle();
+      await settle();
+
+      expect(result.current.index).toBe(0);
+      expect(fetchBytes).toHaveBeenCalledWith(expect.stringContaining("001001.mp3"));
     });
   });
 

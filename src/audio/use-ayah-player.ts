@@ -23,12 +23,18 @@ import {
   type AudioContextLike,
   type BufferSourceLike,
 } from "./ayah-scheduler";
-import type { SurahTimings } from "../types";
+import type { Riwaya, SurahTimings } from "../types";
 
 export interface UseAyahPlayerOptions {
   reciterId: number;
   surah: number;
   ayahCount: number;
+  /**
+   * Obligatoire (plan 3, T6) : 64 sourates ont le meme nombre de versets dans
+   * les deux corpus, donc sans elle dans la cle de redemarrage un changement de
+   * mode passerait pour « meme lecture » et la position serait conservee.
+   */
+  riwaya: Riwaya;
   /** Conserve pour compatibilite avec App.tsx ; la lecture ne s'en sert pas. */
   timings?: SurahTimings | null;
   onAyah?: (index: number) => unknown;
@@ -96,6 +102,7 @@ export function useAyahPlayer({
   reciterId,
   surah,
   ayahCount,
+  riwaya,
   onAyah,
   AudioContextClass,
   fetchBytes,
@@ -125,7 +132,7 @@ export function useAyahPlayer({
   }, []);
   // Derniere configuration connue, pour distinguer « seul le recitant a change »
   // (on peut reprendre la lecture) de « la lecture a change » (il faut repartir).
-  const lastKeyRef = useRef({ reciterId, surah, ayahCount });
+  const lastKeyRef = useRef({ reciterId, surah, ayahCount, riwaya });
 
   const announce = useCallback((i: number) => {
     indexRef.current = i;
@@ -178,7 +185,7 @@ export function useAyahPlayer({
     scheduler.setRepeat(repeatRef.current);
     schedulerRef.current = scheduler;
     return scheduler;
-  }, [reciterId, surah, ayahCount, AudioContextClass, fetchBytes, announce, setPlayingBoth]);
+  }, [reciterId, surah, ayahCount, riwaya, AudioContextClass, fetchBytes, announce, setPlayingBoth]);
 
   // Changer de sourate, de nombre de versets ou de recitant invalide l'ordonnanceur
   // et son contexte : ils sont fermes et reconstruits au prochain besoin.
@@ -195,9 +202,17 @@ export function useAyahPlayer({
   // pour un ordre de jouer.
   useEffect(() => {
     const previous = lastKeyRef.current;
-    lastKeyRef.current = { reciterId, surah, ayahCount };
+    lastKeyRef.current = { reciterId, surah, ayahCount, riwaya };
 
-    const memeLecture = previous.surah === surah && previous.ayahCount === ayahCount;
+    // Plan 3, T6 : la riwaya appartient a la cle. 64 sourates sur 114 ont le meme
+    // nombre de versets dans les deux corpus — sans la comparaison ci-dessous, une
+    // bascule de mode passerait pour « meme lecture » et conserverait la position
+    // au lieu de repartir au verset 1. Comparaison en ligne, pas de constante
+    // partagee : la comparaison elle-meme est la documentation.
+    const memeLecture =
+      previous.surah === surah &&
+      previous.ayahCount === ayahCount &&
+      previous.riwaya === riwaya;
     const position = memeLecture ? indexRef.current : 0;
     // Au montage `memeLecture` est vrai et rien n'a demarre : la page se charge en
     // silence. C'est aussi ce qui empeche un autoplay refuse par le navigateur.
@@ -231,7 +246,7 @@ export function useAyahPlayer({
         setPlayingBoth(false);
       }
     })();
-  }, [reciterId, surah, ayahCount, ensureScheduler, setPlayingBoth]);
+  }, [reciterId, surah, ayahCount, riwaya, ensureScheduler, setPlayingBoth]);
 
   const play = useCallback(async () => {
     try {

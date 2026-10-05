@@ -42,6 +42,9 @@ export function App() {
     reciterId: state.reciter,
     surah: state.surah,
     ayahCount: surah.a.length,
+    // Plan 3, T6 : obligatoire depuis ce commit. La session porte la riwaya
+    // depuis la T4 ; le selecteur de mode (T7) en changera la valeur.
+    riwaya: state.riwaya,
     timings,
     onAyah: (idx) => setAyah(idx + 1),
   });
