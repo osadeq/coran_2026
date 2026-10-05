@@ -239,5 +239,7 @@ TDD (rouge -> vert constate), une tache = un commit :
   `src/data/corpora.ts` importe les deux corpus (App.tsx passe par
   `corpusOf`). `audit-versets.json` et `hafs-reciters-audit.json` conserves
   (preuves du spec, section 15).
-- Reste : T9 etape 6, la verification d'ecoute manuelle Hafs (5 etapes,
-  humaine) — transmise a l'utilisateur, en attente de validation.
+- Etape 6 de la T9 : verification d'ecoute manuelle Hafs (5 etapes) VALIDEE
+  par l'utilisateur le 2026-10-05 — dont le point critique (3), changement de
+  recitant Hafs en cours de lecture, sans decalage de verset. Plan entierement
+  cloture.

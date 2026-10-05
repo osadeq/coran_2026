@@ -42,8 +42,8 @@ e2e seulement en T9.
 ## Etat
 
 - Suite actuelle : `npm test` 182/182 (23 fichiers), `npm run typecheck` vert,
-  `npm run build` vert, `npm run e2e` 7/7 — plan Warsh/Hafs clos hors etape 6
-  de la T9 (controle d'ecoute manuel Hafs, humain, en attente).
+  `npm run build` vert, `npm run e2e` 7/7 — plan Warsh/Hafs **entierement
+  clos** (controle d'ecoute manuel Hafs, 5 etapes, valide le 2026-10-05).
 - Artefacts de sondage (`tailles-baqarah.json`, `decoupage-baqarah.json`)
   supprimes en T9.
   `correction.txt` n'est pas reference par le plan — laisser tel quel.
