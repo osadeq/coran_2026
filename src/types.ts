@@ -1,3 +1,7 @@
+// Riwaya de lecture : le corpus, les recitants et la police du texte dependent
+// de ce choix (plan 3, taches 2 a 8).
+export type Riwaya = "warsh" | "hafs";
+
 export type AyahRow = readonly [juz: number, page: number, text: string];
 
 export interface Surah {
@@ -9,7 +13,7 @@ export interface Surah {
 
 export interface QuranData {
   meta: {
-    riwaya: "warsh";
+    riwaya: Riwaya;
     source: string;
     ayahCount: number;
     surahCount: number;
@@ -53,9 +57,12 @@ export interface Reciter {
   priority: number;
 }
 
-// Plan 2 (T-A) — recitant du mode « un fichier mp3 par verset » (everyayah).
-// Miroir TypeScript du champ `ayahReciters` de `meta.json` (genere depuis
-// `scripts/lib/manifest.mjs::AYAH_RECITERS`). `id` est local (1..3), pas un moshaf mp3quran.
+// Plan 3 (T2) — recitant du mode « un fichier mp3 par verset » (everyayah).
+// Table unique des deux modes : `scripts/lib/manifest.mjs::AYAH_RECITERS`,
+// ids globaux 1..8 (Warsh = 1, Hafs = 2..8), le champ `riwaya` les distingue.
+// `id` est local, pas un moshaf mp3quran. `meta.json.ayahReciters` ne porte que
+// l'historique Warsh, sans `riwaya` : ce n'est plus une source de recitants
+// (tache 7 arrete App.tsx de le lire).
 export interface AyahReciter {
   id: number;
   dir: string;
@@ -63,4 +70,5 @@ export interface AyahReciter {
   label: string;
   labelFr: string;
   priority: number;
+  riwaya: Riwaya;
 }
