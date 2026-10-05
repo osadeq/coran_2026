@@ -1,17 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { AYAH_RECITERS, selectAyahReciter } from "../../scripts/lib/manifest.mjs";
+import {
+  AYAH_RECITERS,
+  rewayaReciters,
+  selectAyahReciter,
+} from "../../scripts/lib/manifest.mjs";
 import { ayahUrl, pad3 } from "../../src/audio/ayah-source";
 
 // Source figee du plan 2 (T-A) : URL verified 2026-09-28 par HEAD sur
 // https://everyayah.com/data/warsh/warsh_Abdul_Basit_128kbps/112001.mp3
 // -> 200 audio/mpeg, Accept-Ranges: bytes, Access-Control-Allow-Origin: *.
+// La base depend de la riwaya depuis la T5 : Warsh sous /data/warsh/, Hafs sous /data/.
 
 import type { AyahReciter } from "../../src/types";
 
 // `manifest.mjs` est en JS (checkJs false) : le typage de la table est retabli ici,
 // c'est exactement ce que `meta.ayahReciters` consomme cote app.
 const reciters = AYAH_RECITERS as readonly AyahReciter[];
-const abdulBasit = reciters.find((r) => r.priority === 0)!;
+const liste = (r: "warsh" | "hafs") => rewayaReciters(r) as readonly AyahReciter[];
+const abdulBasit = liste("warsh")[0];
+const husary = liste("hafs")[0];
 
 describe("pad3", () => {
   it("pad avec des zeros de tete jusqu'a trois chiffres", () => {
@@ -29,6 +36,7 @@ describe("pad3", () => {
 
 describe("ayahUrl", () => {
   it("construit NNNMMM avec un padding 3+3", () => {
+    // Non-regression : l'URL Warsh du recitant par defaut est strictement inchangee.
     expect(ayahUrl(abdulBasit, 112, 1, 4)).toBe(
       "https://everyayah.com/data/warsh/warsh_Abdul_Basit_128kbps/112001.mp3",
     );
@@ -39,8 +47,21 @@ describe("ayahUrl", () => {
   });
 
   it("utilise le repertoire du recitant passe", () => {
-    const aldosary = reciters.find((r) => r.id === 2)!;
-    expect(ayahUrl(aldosary, 112, 1, 4)).toContain("/warsh/warsh_ibrahim_aldosary_128kbps/");
+    // Recitant Hafs : dossier sous /data/ nu, sans le segment warsh.
+    expect(ayahUrl(husary, 112, 1, 4)).toBe(
+      "https://everyayah.com/data/Husary_128kbps/112001.mp3",
+    );
+  });
+
+  it("ne confond pas les deux bases pour un meme verset", () => {
+    const guerre = liste("warsh");
+    const hafs = liste("hafs");
+    const urlWarsh = ayahUrl(guerre[0], 112, 1, 4);
+    const urlHafs = ayahUrl(hafs[0], 112, 1, 4);
+    // Piege du prefixe /data/warsh : seul le corpus Warsh vit dessous.
+    expect(urlWarsh).toContain("/data/warsh/");
+    expect(urlHafs).not.toContain("/data/warsh/");
+    expect(urlHafs).toContain("/data/");
   });
 
   it("refuse un verset hors bornes (0, au-dela du compte, non entier)", () => {
@@ -56,18 +77,20 @@ describe("ayahUrl", () => {
 });
 
 describe("AYAH_RECITERS (manifeste)", () => {
-  it("declare exactement trois recitants Warsh, ids uniques, un seul defaut", () => {
-    expect(AYAH_RECITERS).toHaveLength(3);
-    const ids = new Set(AYAH_RECITERS.map((r) => r.id));
-    expect(ids.size).toBe(3);
-    const defaults = AYAH_RECITERS.filter((r) => r.priority === 0);
-    expect(defaults).toHaveLength(1);
-    expect(defaults[0].dir).toBe("warsh_Abdul_Basit_128kbps");
+  it("declare huit recitants sur les deux modes, ids uniques, un defaut par mode", () => {
+    expect(reciters).toHaveLength(8);
+    const ids = new Set(reciters.map((r) => r.id));
+    expect(ids.size).toBe(8);
+    const defaults = reciters.filter((r) => r.priority === 0);
+    expect(defaults.map((r) => r.dir).sort()).toEqual([
+      "Husary_128kbps",
+      "warsh_Abdul_Basit_128kbps",
+    ]);
   });
 
   it("selectAyahReciter valide contre le manifeste, comme selectReciter", () => {
     expect(selectAyahReciter("").id).toBe(1);
-    expect(selectAyahReciter("2").dir).toBe("warsh_ibrahim_aldosary_128kbps");
+    expect(selectAyahReciter("2").dir).toBe("Husary_128kbps");
     expect(() => selectAyahReciter("9")).toThrow(/inconnu/);
     expect(() => selectAyahReciter("abc")).toThrow(/non numerique/);
   });

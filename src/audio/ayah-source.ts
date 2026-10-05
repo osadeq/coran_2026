@@ -1,9 +1,12 @@
-// Plan 2, T-A — construction de l'URL d'un verset (un fichier mp3 par verset).
+// Plan 2, T-A / Plan 3, T5 — construction de l'URL d'un verset (un fichier mp3
+// par verset).
 //
-// La source est figee dans `scripts/lib/manifest.mjs` (EVERYAYAH_BASE, AYAH_RECITERS,
-// verify par HEAD le 2026-09-28). Le format d'attente est NNNMMM : padding 3+3,
-// 2:255 -> 002255, 112:1 -> 112001.
-import { EVERYAYAH_BASE } from "../../scripts/lib/manifest.mjs";
+// La source est figee dans `scripts/lib/manifest.mjs` (AYAH_RECITERS, bases
+// everyayah, verifies par HEAD le 2026-09-28). Le prefixe de dossier depend de
+// la riwaya du recitant : Warsh sous `/data/warsh/`, Hafs sous `/data/` — le
+// format du nom de fichier, lui, est identique des deux cotes. NNNMMM :
+// padding 3+3, 2:255 -> 002255, 112:1 -> 112001.
+import { everyayahBase } from "../../scripts/lib/manifest.mjs";
 import type { AyahReciter } from "../types";
 
 function checkInt(value: number, name: string): void {
@@ -41,5 +44,5 @@ export function ayahUrl(
   if (ayah < 1 || ayah > ayahCount) {
     throw new RangeError(`ayah hors [1, ${ayahCount}] pour la sourate ${surah}: ${ayah}`);
   }
-  return `${EVERYAYAH_BASE}/${reciter.dir}/${pad3(surah)}${pad3(ayah)}.mp3`;
+  return `${everyayahBase(reciter.riwaya)}/${reciter.dir}/${pad3(surah)}${pad3(ayah)}.mp3`;
 }
