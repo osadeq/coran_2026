@@ -1,10 +1,14 @@
 import React from "react";
-import type { AyahReciter, SurahTimings } from "../types";
+import { RIWAYAS } from "../data/corpora";
+import type { AyahReciter, Riwaya, SurahTimings } from "../types";
 
 export interface PlayerBarProps {
   reciters: AyahReciter[];
   reciter: number;
   onReciter: (id: number) => void;
+  /** Mode de lecture courant (plan 3, T7) : Warsh ou Hafs. */
+  riwaya: Riwaya;
+  onRiwaya: (riwaya: Riwaya) => void;
   playing: boolean;
   currentIndex: number;
   totalAyat: number;
@@ -21,6 +25,8 @@ export function PlayerBar({
   reciters,
   reciter,
   onReciter,
+  riwaya,
+  onRiwaya,
   playing,
   currentIndex,
   totalAyat,
@@ -49,7 +55,27 @@ export function PlayerBar({
 
   return (
     <div className="player">
-      {reciters.length > 0 && (
+      {/* Plan 3, T7 : le selecteur de mode passe avant le recitant, c'est lui
+          qui determine la liste que le select suivant affiche. */}
+      <select
+        id="riwaya-select"
+        name="riwaya"
+        data-testid="player-riwaya"
+        aria-label="Lecture"
+        title="Lecture"
+        value={riwaya}
+        onChange={(e) => onRiwaya(e.currentTarget.value as Riwaya)}
+      >
+        {RIWAYAS.map((r) => (
+          <option key={r} value={r}>
+            {r === "warsh" ? "Warsh" : "Hafs"}
+          </option>
+        ))}
+      </select>
+
+      {/* Une seule voix en Warsh : afficher un select a une option n'explique
+          rien. Les 7 recitants Hafs meritent le choix. */}
+      {reciters.length > 1 && (
         <select
           id="reciter-select"
           name="reciter"

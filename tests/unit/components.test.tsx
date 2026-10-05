@@ -7,7 +7,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { AyahList } from "../../src/components/AyahList";
 import { SurahPicker } from "../../src/components/SurahPicker";
 import { DownloadPanel } from "../../src/components/DownloadPanel";
-import { AYAH_RECITERS } from "../../scripts/lib/manifest.mjs";
+import { rewayaReciters } from "../../scripts/lib/manifest.mjs";
 
 beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -79,7 +79,9 @@ describe("SurahPicker", () => {
 });
 
 describe("DownloadPanel", () => {
-  const reciter = AYAH_RECITERS[0] as any;
+  // Plan 3, T7 : App ne passe plus la table globale mais la liste du mode
+  // courant — un recitant Hafs est la valeur representative des deux modes.
+  const reciter = rewayaReciters("hafs")[0] as any;
 
   it("donne un title a ses deux boutons", () => {
     render(

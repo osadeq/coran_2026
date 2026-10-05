@@ -1,29 +1,36 @@
 import { useEffect, useState, useMemo } from "react";
 import "./styles/fonts.css";
-import quran from "./data/quran-warsh.json";
-import meta from "./data/meta.json";
 import { AyahList } from "./components/AyahList";
 import { PlayerBar } from "./components/PlayerBar";
 import { DownloadPanel } from "./components/DownloadPanel";
 import { SurahPicker } from "./components/SurahPicker";
 import { useSession } from "./state/session";
 import { useAyahPlayer } from "./audio/use-ayah-player";
-import { selectAyahReciter } from "../scripts/lib/manifest.mjs";
-import type { AyahReciter, QuranData, SurahTimings } from "./types";
+import { corpusOf } from "./data/corpora";
+import { rewayaReciters, selectAyahReciter } from "../scripts/lib/manifest.mjs";
+import type { SurahTimings } from "./types";
 
 const timingModules = import.meta.glob<{ default: SurahTimings }>(
   "./data/timings/*/*.json",
 );
 
 export function App() {
-  const data = quran as unknown as QuranData;
-  const metaData = meta as unknown as { ayahReciters: AyahReciter[] };
-  const ayahReciters = metaData.ayahReciters ?? [];
-  const { state, setSurah, setAyah, setReciter } = useSession();
+  const { state, setSurah, setAyah, setReciter, setRiwaya } = useSession();
+  // Plan 3, T7 : le corpus et la liste des recitants suivent le mode — plus
+  // d'import fige de quran-warsh.json ni de meta.ayahReciters.
+  const data = corpusOf(state.riwaya);
+  const reciters = rewayaReciters(state.riwaya);
   const surah = data.surahs[state.surah - 1];
   const [timings, setTimings] = useState<SurahTimings | null>(null);
 
   useEffect(() => {
+    // Les timings dans src/data/timings sont la table du seul Warsh : en Hafs
+    // ils dementiraient (sourate 2 : 285 vs 286) — on les vide plutot que de
+    // les laisser afficher une progression fausse.
+    if (state.riwaya !== "warsh") {
+      setTimings(null);
+      return;
+    }
     let cancelled = false;
     const load = timingModules[`./data/timings/120/${state.surah}.json`];
     if (!load) {
@@ -36,7 +43,7 @@ export function App() {
     return () => {
       cancelled = true;
     };
-  }, [state.surah]);
+  }, [state.surah, state.riwaya]);
 
   const player = useAyahPlayer({
     reciterId: state.reciter,
@@ -64,7 +71,7 @@ export function App() {
     <>
       <header className="app-header">
         <div className="app-header-top">
-          <h1 className="app-title">Coran — Warsh</h1>
+          <h1 className="app-title">Coran — {state.riwaya === "warsh" ? "Warsh" : "Hafs"}</h1>
           <div className="app-header-tools">
             <SurahPicker surahs={data.surahs} value={state.surah} onChange={setSurah} />
             <DownloadPanel
@@ -76,9 +83,11 @@ export function App() {
           </div>
         </div>
         <PlayerBar
-          reciters={ayahReciters}
+          reciters={reciters}
           reciter={state.reciter}
           onReciter={setReciter}
+          riwaya={state.riwaya}
+          onRiwaya={setRiwaya}
           playing={player.playing}
           currentIndex={player.index}
           totalAyat={surah.a.length}
@@ -91,7 +100,8 @@ export function App() {
           timings={timings}
         />
       </header>
-      <main className="app-main">
+      {/* Attribut attendu par la T8 (police par mode) et deja assertable ici. */}
+      <main className="app-main" data-riwaya={state.riwaya}>
         <h2 dir="rtl" lang="ar" className="surah-heading">
           {surah.ar}
         </h2>
