@@ -166,3 +166,78 @@ Branch : `feat/socle-warsh`
   garde du streaming.
 - T13 : `vite preview` se lie a `[::1]` sous Windows ; `--host 127.0.0.1` est
   necessaire au webServer Playwright dont l'URL d'attente est IPv4.
+
+## Plan double lecture Warsh/Hafs — taches 1 a 9 (2026-10-05)
+
+Plan : `docs/superpowers/plans/2026-10-04-warsh-hafs.md`. Taches executees en
+TDD (rouge -> vert constate), une tache = un commit :
+
+| # | Tache | Commit(s) |
+|---|-------|-----------|
+| 1 | Corpus Hafs 6236 versets (ingest dedie, fixture, format TTF) | `a86f5e4`, `1d528c0`, `8cdbcae` |
+| 2 | Recitants par riwaya dans le manifeste (1 Warsh / 7 Hafs) | `0a15db1` (+ regression fixtures `6e97140`) |
+| 3 | Resolution `riwaya -> corpus` | `e63e60b` |
+| 4 | Session porte la riwaya (revalidation recitant, fallback legacy) | `fbc11e2` |
+| 5 | URL everyayah adaptee a la riwaya | `96970c5` |
+| 6 | Riwaya dans la cle de redemarrage (tache critique) | `8272e95` |
+| 7 | Selecteur de mode UI (corpus, timings, titre, selecteur recitant) | `77561f6` |
+| 8 | Police Amiri Quran + garde-fou de couverture | `c135cd2` |
+| 9 | Verification finale, e2e et nettoyage | cloture (la suite, ci-dessous) |
+
+### Les deux mesures qui justifient l'architecture
+
+- **64 sourates sur 114** ont le meme nombre de versets dans les deux corpus :
+  une bascule Warsh <-> Hafs sur l'une d'elles passait pour « meme lecture »
+  si la riwaya n'entrait pas dans la cle de redemarrage. D'ou la contrainte
+  T6 (`riwaya` obligatoire dans `UseAyahPlayerOptions`), verrouillee par deux
+  tests : en lecture ET en pause.
+- **7 recitants Hafs a zero divergence** (`hafs-reciters-audit.json`, chacun
+  sur 6236 versets, `desaccords: []`) face a 1 seul recitant Warsh ; ids
+  disjoints entre les deux tables — d'ou la revalidation du recitant en T4.
+
+### Ecarts au plan
+
+- (a) T2 — l'anti-derivation `meta.json` : le plan ecrivait « exactement le
+  tableau des recitants Warsh », impossible tant que `meta.json` n'est pas
+  regenere (contrainte globale : il garde ses 3 entrees d'origine). Le test
+  fige l'historique de `meta.json` ET le croise sur le defaut Warsh du
+  manifeste : tout changement d'un cote sans l'autre casse ici.
+- (b) T2 -> regression `6e97140` : les fixtures recitants predites par le plan
+  cassaient `player-bar` et `use-ayah-player` (et non `components.test` comme
+  le plan l'ecrivait). Correction des fixtures, pas assouplissement : T5
+  reecrit `ayah-source`, T7 reecrit `player-bar` en selecteur filtre par mode.
+- (c) T6 — `App.tsx` entre dans le commit : l'option `riwaya` obligatoire
+  impose qu'App la transmette depuis la session.
+- (d) T7 — l'assertion « badge durees estimees » du plan est inatteignable :
+  les 114 fichiers de timings sont `precision: exact`, le badge ne s'affiche
+  donc jamais. Reformulee sur `aria-valuenow` de la progression (sourate 1 :
+  13240/56140 = 24 % avec la table Warsh, 1/7 = 14 % sans elle), ce qui
+  prouve le gate des timings dans les deux modes (critere de fin — badge
+  absent en Hafs — couvert separement en T7).
+- (e) T8 — le plan attribuait le 0/69 de QCF2001 a la police Warsh ; la
+  mesure reelle de `kfgqpc_warsh_v30` est 58/69 (11 trous). La regle de la
+  spec (69/69 sur le corpus Hafs, par la police Hafs) est inchangee.
+- (f) T9 e2e — trois tests de `8023029` dataient d'avant l'autoplay : leur
+  clic sur « Lecture » mettait en pause l'autoplay lance par la selection de
+  sourate. Reformules pour affirmer l'autoplay (`aria-label` « Pause ») au
+  lieu de cliquer. Deuxieme decouverte en T9 : la fenetre ~250 ms de chaque
+  verset (stub WAV 300 ms) est plus courte que l'intervalle de re-essai de
+  `toHaveAttribute` (~500 ms), d'ou un taux de reussite nul de l'assertion
+  d'avance automatique alors que la lecture avance bien (sonde : 1 -> 2 -> 3
+  -> 4 en ~1,2 s). Les assertions d'avance passent en `expect.poll` a
+  intervals serres. Deux coquilles attrapees au passage en T8 : «
+  couverturecomplete » (espace manquant) dans un message de test, et deux
+  noms de tests en « en-tete » accentee — corrigees.
+
+### Gates de cloture (2026-10-05)
+
+- `npm test` : **182/182** (23 fichiers).
+- `npm run typecheck` : vert ; `npm run build` : vert.
+- `npm run e2e` : **7/7**, deux passages consecutifs.
+- Etapes 1 a 3 de la T9 : artefacts de sondage (`tailles-baqarah.json`,
+  `decoupage-baqarah.json`) supprimes, aucun trace `[DBG]`, seuls
+  `src/data/corpora.ts` importe les deux corpus (App.tsx passe par
+  `corpusOf`). `audit-versets.json` et `hafs-reciters-audit.json` conserves
+  (preuves du spec, section 15).
+- Reste : T9 etape 6, la verification d'ecoute manuelle Hafs (5 etapes,
+  humaine) — transmise a l'utilisateur, en attente de validation.

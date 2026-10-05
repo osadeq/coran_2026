@@ -34,13 +34,25 @@ test.describe("lecteur par verset", () => {
   test("avance automatiquement du verset 1 au verset 4 lors de la lecture", async ({ page }) => {
     await stubVerseAudio(page);
     await page.goto("/");
+    // La selection d'une sourate LANCE la lecture (autoplay voulu, voir CLAUDE.md) :
+    // un clic sur Lecture la mettrait en pause. L'ecriture d'origine (commit
+    // 8023029) datait d'avant l'autoplay et ce clic n'existait que pour demarrer.
     await page.selectOption('select[aria-label="Sourate"]', "112");
 
-    await page.getByTestId("player-play").click();
-
+    await expect(page.getByTestId("player-play")).toHaveAttribute("aria-label", "Pause");
     await expect(page.getByTestId("ayah-1")).toHaveAttribute("data-active", "true");
 
-    await expect(page.getByTestId("ayah-4")).toHaveAttribute("data-active", "true", { timeout: 10000 });
+    // expect.poll avec intervals serres : le stub de 300 ms rend la fenetre
+    // d'affichage de chaque verset ~250 ms, plus courte que l'intervalle de
+    // re-essai de toHaveAttribute (voir plus bas ~500 ms) — l'assertion rate
+    // la fenetre de ayah-4 alors que la lecture avance bien (sonde verifiee).
+    await expect
+      .poll(async () => page.getByTestId("ayah-4").getAttribute("data-active"), {
+        timeout: 10000,
+        intervals: [100, 150, 200, 300],
+        message: "ayah-4 ne devient jamais actif pendant l'auto-avance",
+      })
+      .toBe("true");
 
     await expect(page.getByTestId("player-play")).toHaveAttribute("aria-label", "Lire", { timeout: 5000 });
   });
@@ -70,8 +82,9 @@ test.describe("lecteur par verset", () => {
     await page.getByTestId("player-repeat").click();
     await expect(page.getByTestId("player-repeat")).toHaveAttribute("aria-pressed", "true");
 
+    // Pas de clic sur Lecture : la selection de la sourate joue deja (autoplay).
+    // Cliquer dessus basculerait en pause et la repetition ne se manifesterait plus.
     await page.getByTestId("ayah-4").click();
-    await page.getByTestId("player-play").click();
 
     await expect(page.getByTestId("ayah-4")).toHaveAttribute("data-active", "true");
     await page.waitForTimeout(600);
@@ -99,9 +112,18 @@ test.describe("lecteur par verset", () => {
 
     networkMp3Requests = 0;
 
-    await page.getByTestId("player-play").click();
-    await expect(page.getByTestId("ayah-1")).toHaveAttribute("data-active", "true");
-    await expect(page.getByTestId("ayah-2")).toHaveAttribute("data-active", "true", { timeout: 5000 });
+    // Autoplay : la selection a deja relance la lecture depuis le cache ; le clic
+    // sur Lecture (ecriture d'avant-autoplay) l'aurait mise en pause ici.
+    await expect(page.getByTestId("player-play")).toHaveAttribute("aria-label", "Pause");
+    // Meme intervals serres que pour ayah-4 : la fenetre du verset 2 dure
+    // ~250 ms (stub de 300 ms), trop courte pour l'intervalle de toHaveAttribute.
+    await expect
+      .poll(async () => page.getByTestId("ayah-2").getAttribute("data-active"), {
+        timeout: 5000,
+        intervals: [100, 150, 200, 300],
+        message: "ayah-2 ne devient jamais actif depuis le cache",
+      })
+      .toBe("true");
 
     expect(networkMp3Requests).toBe(0);
   });
@@ -118,5 +140,30 @@ test.describe("lecteur par verset", () => {
     } else {
       await expect(badge).toBeVisible();
     }
+  });
+
+  // Plan 3, T9 etape 5 : le navigateur est le seul controle du rendu. Le test
+  // unitaire de cmap prouve que la police COUVRE les 69 codepoints ; celui-ci
+  // prouve qu'elle est bien CHARGEE et APPLIQUEE au verset en mode Hafs — les
+  // deux ensemble excluent les carres vides.
+  test("le mode Hafs applique et charge la police Amiri Quran", async ({ page }) => {
+    await stubVerseAudio(page);
+    await page.goto("/");
+    await page.selectOption('select[aria-label="Sourate"]', "112");
+    await page.selectOption('[data-testid="player-riwaya"]', "hafs");
+
+    await expect(page.locator("main")).toHaveAttribute("data-riwaya", "hafs");
+
+    const applied = await page.evaluate(async () => {
+      await document.fonts.ready;
+      const el = document.querySelector(".ayah-text");
+      if (!el) return { family: "", loaded: false };
+      return {
+        family: getComputedStyle(el).fontFamily,
+        loaded: document.fonts.check('1em "Amiri Quran"'),
+      };
+    });
+    expect(applied.family).toMatch(/^"Amiri Quran"/);
+    expect(applied.loaded, "police Amiri Quran non chargee par le navigateur").toBe(true);
   });
 });
