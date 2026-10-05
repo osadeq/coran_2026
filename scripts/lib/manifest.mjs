@@ -27,6 +27,24 @@ export const KFGQPC = Object.freeze({
   }),
 });
 
+// Plan 3, T8 — police du texte Hafs. QCF2001 (KFGQPC Hafs) est ecarte : ses
+// glyphes vivent dans le codepage prive du complexe (U+F777..U+F8A6) et ses
+// trois sous-tables cmap couvrent 0 des 69 codepoints du corpus uthmani
+// (spec 2.6, mesure sur QCF2001.ttf non vendor). Le test font-coverage.test.ts
+// fige la couverture des deux polices vendor : Amiri 69/69, et la police Warsh
+// 58/69 — elle aussi partielle, donc pas un substitut Hafs.
+// Une police ne se fige pas moins qu'un corpus : meme forme { path, md5 },
+// meme exigence de licence et meme longueur de note de provenance que KFGQPC.
+export const AMIRI_QURAN = Object.freeze({
+  path: "src/assets/fonts/AmiriQuran-Regular.ttf",
+  md5: "940b9a0e46485ff92ee220ed4ec242a4",
+  license: "SIL Open Font License 1.1",
+  licenseNote:
+    "Police Amiri Quran vendored du depot google/fonts (ofl/amiriquran) 2026-10-05. " +
+    "Licence SIL Open Font License 1.1 ; empreinte md5 ci-dessus, fichier TTF publie " +
+    "tel quel, ni retouche ni reencodage du fichier.",
+});
+
 export const QURAN_META = Object.freeze({
   id: "quran-meta",
   version: "7.0.0",

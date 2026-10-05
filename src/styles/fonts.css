@@ -6,6 +6,17 @@
   font-display: swap;
 }
 
+/* Plan 3, T8 : la pile du mode Hafs. TTF complet (137 Ko) et non woff2 : un
+ * sous-ensemble peut rater l'un des 69 codepoints du corpus — la couverture
+ * est justement ce qu'on achete (spec 2.6). */
+@font-face {
+  font-family: "Amiri Quran";
+  src: url("../assets/fonts/AmiriQuran-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* La typo du texte du Coran vit dans app.css, cote theme : cette feuille ne contient
- * que la police, ce qui evite que deux feuilles se disputent `.ayah-text` selon
- * l'ordre d'import. */
+ * que la declaration des polices, ce qui evite que deux feuilles se disputent
+ * `.ayah-text` selon l'ordre d'import. */

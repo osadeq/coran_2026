@@ -201,12 +201,23 @@ body {
 .ayah-text {
   display: block;
   text-align: center;
-  /* Police et corps du texte CORAN : la regle est ici, pas dans fonts.css, pour
-   * ne pas dependre de l'ordre d'import des deux feuilles. */
-  font-family: "KFGQPC Warsh", "Traditional Arabic", "Amiri", serif;
+  /* Corps du texte CORAN : la regle est ici, pas dans fonts.css, pour ne pas
+   * dependre de l'ordre d'import des deux feuilles. La famille, elle, vient des
+   * deux regles [data-riwaya] ci-dessous — la base n'en choisit plus. */
   font-size: var(--corps-verset);
   line-height: 2.1;
   color: var(--creme);
+}
+
+/* Plan 3, T8 : une pile par mode, alignee sur data-riwaya de <main> (T7).
+ * Warsh garde la pile historique ; Hafs prend Amiri Quran seule (spec 2.6 :
+ * QCF2001 ecarte, le mode Hafs ne partage aucun glyphe avec le codepage prive). */
+[data-riwaya="warsh"] .ayah-text {
+  font-family: "KFGQPC Warsh", "Traditional Arabic", "Amiri", serif;
+}
+
+[data-riwaya="hafs"] .ayah-text {
+  font-family: "Amiri Quran", "Traditional Arabic", serif;
 }
 
 /* juz:page — discret, et seulement au survol : sinon il pollue la recitation. */

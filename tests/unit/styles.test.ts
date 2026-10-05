@@ -111,3 +111,31 @@ describe("echelle proportionnelle a la largeur", () => {
     );
   });
 });
+
+// Plan 3, T8 : la police depend du mode. La base ne choisit plus de famille —
+// ce sont les deux regles [data-riwaya] qui l'imposent, alignees sur le
+// data-riwaya de <main> (pose en T7). Une famille en base rendrait ces regles
+// mortes silencieusement.
+describe("police du texte du Coran", () => {
+  it("le mode Warsh impose KFGQPC Warsh en tete de pile", () => {
+    const family = propertyOf(
+      declarationsFor(CSS, '[data-riwaya="warsh"] .ayah-text'),
+      "font-family",
+    );
+    expect(family).toMatch(/^"KFGQPC Warsh"/);
+  });
+
+  it("le mode Hafs impose Amiri Quran en tete de pile", () => {
+    const family = propertyOf(
+      declarationsFor(CSS, '[data-riwaya="hafs"] .ayah-text'),
+      "font-family",
+    );
+    expect(family).toMatch(/^"Amiri Quran"/);
+  });
+
+  it("la base .ayah-text ne choisit aucune famille", () => {
+    expect(
+      propertyOf(declarationsFor(CSS, ".ayah-text"), "font-family"),
+    ).toBeUndefined();
+  });
+});
