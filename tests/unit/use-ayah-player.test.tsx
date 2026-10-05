@@ -383,7 +383,9 @@ describe("useAyahPlayer sur l'ordonnanceur a relais", () => {
     await settle();
 
     expect(firstSource.stopped).toBe(true);
-    expect(fetchBytes).toHaveBeenCalledWith(expect.stringContaining("warsh_ibrahim_aldosary_128kbps"));
+    // Depuis la T2, l'id 2 est le recitant Hafs Husary : l'ancien dossier
+    // warsh_ibrahim_aldosary etait defectueux (404) et a ete retire du manifeste.
+    expect(fetchBytes).toHaveBeenCalledWith(expect.stringContaining("Husary_128kbps"));
   });
 
   // Point 2 de correction.txt : changer de recitant en plein playback ne doit pas
@@ -422,9 +424,8 @@ describe("useAyahPlayer sur l'ordonnanceur a relais", () => {
     expect(result.current.playing).toBe(true);
     expect(result.current.index).toBe(2);
     expect(onAyah).toHaveBeenCalledWith(2);
-    expect(fetchBytes).toHaveBeenCalledWith(
-      expect.stringContaining("warsh_ibrahim_aldosary_128kbps"),
-    );
+    // Id 2 = Hafs Husary depuis la T2 (voir le test precedent).
+    expect(fetchBytes).toHaveBeenCalledWith(expect.stringContaining("Husary_128kbps"));
     expect(fetchBytes).toHaveBeenCalledWith(expect.stringContaining("112003.mp3"));
     expect(fetchBytes).not.toHaveBeenCalledWith(expect.stringContaining("112001.mp3"));
     expect(ctx.sources[ctx.sources.length - 1].buffer).not.toBeNull();

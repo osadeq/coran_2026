@@ -47,7 +47,9 @@ describe("PlayerBar", () => {
 
     const select = screen.getByTestId("player-reciter") as HTMLSelectElement;
     expect(select.value).toBe("1");
-    expect(select.options).toHaveLength(3);
+    // Table globale depuis la T2 : 1 Warsh + 7 Hafs = 8 options (le selecteur
+    // de mode, filtre par riwaya, arrive en T7).
+    expect(select.options).toHaveLength(8);
 
     fireEvent.change(select, { target: { value: "2" } });
     expect(onReciter).toHaveBeenCalledWith(2);
