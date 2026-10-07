@@ -12,6 +12,13 @@ import { App } from "../../src/App";
 
 const requestedUrls: string[] = [];
 
+// La jauge porte le verset courant dans un champ : on recompose « N / total ».
+const positionText = () => {
+  const box = screen.getByTestId("player-position");
+  const input = box.querySelector("input");
+  return `${input?.value ?? ""}${box.textContent ?? ""}`.trim();
+};
+
 class FakeSource {
   buffer: unknown = null;
   onended: (() => void) | null = null;
@@ -85,11 +92,11 @@ describe("App — modes Warsh et Hafs", () => {
   it("le corpus suit le mode : 1 / 285 en Warsh puis 1 / 286 en Hafs sur la sourate 2", async () => {
     render(<App />);
     await chooseSurah(2);
-    expect(screen.getByTestId("player-position")).toHaveTextContent("1 / 285");
+    expect(positionText()).toBe("1 / 285");
 
     await switchMode("hafs");
 
-    expect(screen.getByTestId("player-position")).toHaveTextContent("1 / 286");
+    expect(positionText()).toBe("1 / 286");
   });
 
   // Le badge « durées estimées » du plan ne peut pas servir d'assertion : les
@@ -127,7 +134,7 @@ describe("App — modes Warsh et Hafs", () => {
 
     await switchMode("hafs");
 
-    const position = screen.getByTestId("player-position").textContent ?? "";
+    const position = positionText();
     const [courant, total] = position.split("/").map((s) => Number(s.trim()));
     expect(total).toBe(286);
     expect(courant).toBeGreaterThanOrEqual(1);
@@ -141,12 +148,12 @@ describe("App — modes Warsh et Hafs", () => {
   it("sourate 5 : 122 ayat en Warsh puis 120 en Hafs, sans verset ni URL hors range", async () => {
     render(<App />);
     await chooseSurah(5);
-    expect(screen.getByTestId("player-position")).toHaveTextContent("1 / 122");
+    expect(positionText()).toBe("1 / 122");
     expect(screen.getByTestId("ayah-122")).toBeInTheDocument();
 
     await switchMode("hafs");
 
-    expect(screen.getByTestId("player-position")).toHaveTextContent("1 / 120");
+    expect(positionText()).toBe("1 / 120");
     expect(screen.queryByTestId("ayah-121")).not.toBeInTheDocument();
     expect(screen.queryByTestId("ayah-122")).not.toBeInTheDocument();
 

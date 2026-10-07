@@ -60,7 +60,8 @@ describe("PlayerBar", () => {
   it("affiche la position '1 / 4' et le sélecteur de récitant par défaut sur Abdul Basit", () => {
     const { onReciter } = renderBar();
 
-    expect(screen.getByTestId("player-position")).toHaveTextContent("1 / 4");
+    expect(positionInput().value).toBe("1");
+    expect(positionBox()).toHaveTextContent("/ 4");
 
     const select = screen.getByTestId("player-reciter") as HTMLSelectElement;
     expect(select.value).toBe("1");
@@ -106,7 +107,8 @@ describe("PlayerBar", () => {
     rerender(<PlayerBar {...props} playing={true} currentIndex={1} repeat={true} />);
 
     expect(screen.getByTestId("player-play")).toHaveAttribute("aria-label", "Pause");
-    expect(screen.getByTestId("player-position")).toHaveTextContent("2 / 4");
+    expect(positionInput().value).toBe("2");
+    expect(positionBox()).toHaveTextContent("/ 4");
     expect(screen.getByTestId("player-repeat")).toHaveAttribute("aria-pressed", "true");
   });
 
