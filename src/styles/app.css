@@ -326,6 +326,18 @@ button[aria-pressed="true"] {
   min-width: 4.5rem;
 }
 
+.player-position input {
+  width: 6ch;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--bordure);
+  border-radius: 4px;
+  padding: 1px 2px;
+  text-align: center;
+}
+
 .player-progress {
   flex: 1;
   min-width: 120px;

@@ -1,55 +1,43 @@
-// Manifest Hafs par riwaya
-import { AYAH_RECITERS, rewayaReciters, defaultAyahReciter, everyayahBase, selectAyahReciter, EVERYAYAH_BASE } from "../../scripts/lib/manifest.mjs";
-import { it, describe, expect } from "vitest";
 import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import {
+  AYAH_RECITERS,
+  defaultAyahReciter,
+  everyayahBase,
+  rewayaReciters,
+  selectAyahReciter,
+} from "../../scripts/lib/manifest.mjs";
+import type { AyahReciter, Riwaya } from "../../src/types";
 
-// Get root: vitest provides import.meta.dirname in node mode
-const testDir = import.meta.dirname || "../..";
-const root = testDir.replace(/\/[^/]*$/, "") + "/.." + "/..";
+// `manifest.mjs` est en JS (checkJs false) : le typage de la table est retabli ici,
+// comme dans ayah-source.test.ts.
+const liste = (r: Riwaya) => rewayaReciters(r) as readonly AyahReciter[];
 
-function readJson(relative: string) {
-  const path = root + "/" + relative;
-  const raw = readFileSync(path, "utf8");
-  return JSON.parse(raw) as unknown;
-}
-
-describe("manifest riwaya", () => {
-  // 1. rewayaReciters
-  it("rewayaReciters(\"warsh\") a 1 element, rewayaReciters(\"hafs\") a 7", () => {
-    expect(rewayaReciters("warsh").length).toBe(1);
-    expect(rewayaReciters("hafs").length).toBe(7);
+describe("rewayaReciters", () => {
+  it("repartit 1 recitant Warsh et 7 recitants Hafs", () => {
+    expect(liste("warsh")).toHaveLength(1);
+    expect(liste("hafs")).toHaveLength(7);
   });
 
-  // 2. defaultAyahReciter
-  it("defaultAyahReciter(\"warsh\").id === 1, defaultAyahReciter(\"hafs\").id === 2", () => {
-    expect(defaultAyahReciter("warsh").id).toBe(1);
-    expect(defaultAyahReciter("hafs").id).toBe(2);
+  it("porte une riwaya coherente avec la liste dont il vient", () => {
+    for (const r of ["warsh", "hafs"] as const) {
+      for (const reciter of liste(r)) {
+        expect(reciter.riwaya).toBe(r);
+      }
+    }
   });
 
-  // 3. defaultAyahReciter est membre de rewayaReciters
-  it("defaultAyahReciter(riwaya) est membre de rewayaReciters(riwaya)", () => {
-    expect(rewayaReciters("warsh").some((r) => r.id === defaultAyahReciter("warsh").id)).toBe(true);
-    expect(rewayaReciters("hafs").some((r) => r.id === defaultAyahReciter("hafs").id)).toBe(true);
+  it("ne garde qu'un dossier Warsh et aucun dossier Hafs de prefixe warsh_", () => {
+    // Piege du prefixe /data/warsh : un dossier Hafs commence par warsh_ serait
+    // resolu deux fois par la meme base.
+    expect(liste("warsh").map((r) => r.dir)).toEqual(["warsh_Abdul_Basit_128kbps"]);
+    for (const reciter of liste("hafs")) {
+      expect(reciter.dir.startsWith("warsh_")).toBe(false);
+    }
   });
 
-  // 4. ids disjoints, union size 8
-  it("les ids des deux modes sont disjoints (union size 8)", () => {
-    const ids = new Set();
-    rewayaReciters("warsh").forEach((r) => ids.add(r.id));
-    rewayaReciters("hafs").forEach((r) => ids.add(r.id));
-    expect(ids.size).toBe(8);
-  });
-
-  // 5. chaque recitant a r.riwaya === r
-  it("chaque recitant a r.riwaya === r", () => {
-    rewayaReciters("warsh").forEach((r) => expect(r.riwaya).toBe("warsh"));
-    rewayaReciters("hafs").forEach((r) => expect(r.riwaya).toBe("hafs"));
-  });
-
-  // 6. les 7 dossiers Hafs
-  it("les 7 dossiers Hafs dans l'ordre attendu", () => {
-    const hafsDirs = rewayaReciters("hafs").map((r) => r.dir);
-    expect(hafsDirs).toEqual([
+  it("ordonne les sept dossiers Hafs attendus", () => {
+    expect(liste("hafs").map((r) => r.dir)).toEqual([
       "Husary_128kbps",
       "Yasser_Ad-Dussary_128kbps",
       "Minshawy_Murattal_128kbps",
@@ -59,50 +47,111 @@ describe("manifest riwaya", () => {
       "Abdul_Basit_Murattal_192kbps",
     ]);
   });
+});
 
-  // 7. pas de prefxe warsh_, seul Warsh est warsh_Abdul_Basit_128kbps
-  it("aucun dossier Hafs ne commence par warsh_", () => {
-    rewayaReciters("hafs").forEach((r) => {
-      expect(r.dir).not.toMatch(/^warsh_/);
-    });
-    expect(rewayaReciters("warsh")[0].dir).toBe("warsh_Abdul_Basit_128kbps");
+describe("defaultAyahReciter", () => {
+  it("choisit l'id 1 en Warsh et l'id 2 en Hafs", () => {
+    expect(defaultAyahReciter("warsh").id).toBe(1);
+    expect(defaultAyahReciter("hafs").id).toBe(2);
   });
 
-  // 8. everyayahBase
-  it("everyayahBase corrects selon le mode", () => {
+  it("retombe toujours sur un membre de la liste du mode", () => {
+    for (const r of ["warsh", "hafs"] as const) {
+      const defaut = defaultAyahReciter(r);
+      expect(liste(r)).toContainEqual(defaut);
+      expect(defaut.riwaya).toBe(r);
+    }
+  });
+});
+
+describe("identifiants des deux modes", () => {
+  it("sont disjoints et couvrent exactement 1..8", () => {
+    const ids = [...liste("warsh"), ...liste("hafs")].map((r) => r.id);
+    // 1 Warsh + 7 Hafs = 8 elements : un Set de taille 8 prouve la disjointete.
+    expect(ids).toHaveLength(8);
+    expect(new Set(ids)).toEqual(new Set([1, 2, 3, 4, 5, 6, 7, 8]));
+  });
+});
+
+describe("everyayahBase", () => {
+  it("separe les deux bases de dossier", () => {
     expect(everyayahBase("warsh")).toBe("https://everyayah.com/data/warsh");
     expect(everyayahBase("hafs")).toBe("https://everyayah.com/data");
   });
+});
 
-  // 9. selectAyahReciter globale non ambiguë
-  it("selectAyahReciter(\"2\") renvoie le recitant Hafs id 2", () => {
-    expect(selectAyahReciter("2").dir).toBe("Husary_128kbps");
-    expect(selectAyahReciter("2").riwaya).toBe("hafs");
+describe("selectAyahReciter", () => {
+  it("resout les ids des deux modes sans ambiguite", () => {
+    expect(selectAyahReciter("").id).toBe(1);
+    const deux = selectAyahReciter("2");
+    expect(deux.id).toBe(2);
+    expect(deux.riwaya).toBe("hafs");
+    expect(deux.dir).toBe("Husary_128kbps");
+    expect(() => selectAyahReciter("9")).toThrow(/inconnu/);
+    expect(() => selectAyahReciter("abc")).toThrow(/non numerique/);
+  });
+});
+
+// Garde-fou anti-derive : meta.json n'est PAS regenere par ce plan (contrainte
+// globale) ; il porte encore les trois recitants Warsh d'origine. Les dossiers
+// ibrahim_aldosary et yassin ont ete retires du manifeste en tache 2 (404
+// cotes everyayah) : le manifeste Warsh n'a plus que l'id 1.
+// Ecart au plan : le plan ecrivait « exactement le tableau des recitants
+// Warsh », ce qui est impossible tant que meta.json garde ses trois entrees.
+// Le test fige donc l'historique de meta.json ET le croise sur le defaut
+// Warsh du manifeste : tout changement d'un cote sans l'autre casse ici.
+type ChampReciter = {
+  id: number;
+  dir: string;
+  bitrate: number;
+  labelFr: string;
+  priority: number;
+};
+
+const champs = (r: ChampReciter): ChampReciter => ({
+  id: r.id,
+  dir: r.dir,
+  bitrate: r.bitrate,
+  labelFr: r.labelFr,
+  priority: r.priority,
+});
+
+const metaAyahReciters = (): ChampReciter[] => {
+  const meta = JSON.parse(readFileSync("src/data/meta.json", "utf8")) as {
+    ayahReciters: ChampReciter[];
+  };
+  return meta.ayahReciters.map(champs);
+};
+
+describe("meta.json (anti-derive)", () => {
+  it("fige le tableau historique des recitants Warsh", () => {
+    expect(metaAyahReciters()).toEqual([
+      {
+        id: 1,
+        dir: "warsh_Abdul_Basit_128kbps",
+        bitrate: 128,
+        labelFr: "Abdul Baasit (Warsh, 128 kbps)",
+        priority: 0,
+      },
+      {
+        id: 2,
+        dir: "warsh_ibrahim_aldosary_128kbps",
+        bitrate: 128,
+        labelFr: "Ibrahim Al-Dosari (Warsh, 128 kbps)",
+        priority: 1,
+      },
+      {
+        id: 3,
+        dir: "warsh_yassin_al_jazaery_64kbps",
+        bitrate: 64,
+        labelFr: "Yassin Al-Jazaery (Warsh, 64 kbps)",
+        priority: 2,
+      },
+    ]);
   });
 
-  // 10. anti-drift : intersection meta.json vs manifeste
-  it("anti-drift : intersection meta.json/manifest sur ids warsh", () => {
-    const meta = readJson("src/data/meta.json") as any;
-    const warshIds = new Set(rewayaReciters("warsh").map((r) => r.id));
-    // Pour chaque entry de meta.ayahReciters dont l'id est dans warshIds,
-    // elle doit correspondre sur dir, bitrate, labelFr, priority
-    meta.ayahReciters.forEach((entry: any) => {
-      if (warshIds.has(entry.id)) {
-        const manifestEntry = AYAH_RECITERS.find((r) => r.id === entry.id);
-        expect(manifestEntry).toBeDefined();
-        expect(manifestEntry.dir).toBe(entry.dir);
-        expect(manifestEntry.bitrate).toBe(entry.bitrate);
-        expect(manifestEntry.labelFr).toBe(entry.labelFr);
-        expect(manifestEntry.priority).toBe(entry.priority);
-      }
-    });
-  });
-
-  // 11. AYAH_RECITERS figé, 8 entries, ids distincts
-  it("AYAH_RECITERS est figé et a 8 entries avec ids distincts", () => {
-    expect(Object.isFrozen(AYAH_RECITERS)).toBe(true);
-    expect(AYAH_RECITERS.length).toBe(8);
-    const ids = new Set(AYAH_RECITERS.map((r) => r.id));
-    expect(ids.size).toBe(8);
+  it("accorde le defaut Warsh du manifeste avec l'entree priority 0 de meta.json", () => {
+    const depuisMeta = metaAyahReciters().find((r) => r.priority === 0)!;
+    expect(champs(defaultAyahReciter("warsh"))).toEqual(depuisMeta);
   });
 });

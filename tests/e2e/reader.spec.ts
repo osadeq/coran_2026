@@ -74,6 +74,24 @@ test.describe("lecteur par verset", () => {
     }
   });
 
+  // La jauge de position : la frappe « 40 » ne saute pas au verset 4 en
+  // chemin, seule la validation (Entree) engage le saut.
+  test("saut au verset saisi dans la jauge de position", async ({ page }) => {
+    await stubVerseAudio(page);
+    await page.goto("/");
+    await page.selectOption('select[aria-label="Sourate"]', "2");
+
+    const input = page.getByTestId("player-position").getByRole("spinbutton");
+    await input.click();
+    await input.press("Control+a");
+    await input.pressSequentially("40");
+    await expect(page.getByTestId("ayah-4")).not.toHaveAttribute("data-active", "true");
+    await input.press("Enter");
+
+    await expect(page.getByTestId("ayah-40")).toHaveAttribute("data-active", "true");
+    await expect(input).toHaveValue("40");
+  });
+
   test("mode répétition (repeat)", async ({ page }) => {
     await stubVerseAudio(page);
     await page.goto("/");

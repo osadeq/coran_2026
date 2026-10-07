@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { RIWAYAS } from "../data/corpora";
 import type { AyahReciter, Riwaya, SurahTimings } from "../types";
 
@@ -37,10 +37,32 @@ export function PlayerBar({
   onPause,
   onPrev,
   onNext,
+  onSeek,
   onToggleRepeat,
   timings,
 }: PlayerBarProps) {
   const currentVerseNum = totalAyat > 0 ? currentIndex + 1 : 0;
+
+  // Saisie en cours dans la jauge ; null = afficher le verset courant.
+  const [draft, setDraft] = useState<string | null>(null);
+  const positionRef = useRef<HTMLInputElement>(null);
+
+  // L'evenement change NATIF (fleches +/-, perte de focus, Entree) engage le
+  // saut. Le onChange de React suit aussi chaque frappe : il ne sert qu'au
+  // brouillon, sinon taper « 12 » sauterait d'abord au verset 1.
+  useEffect(() => {
+    const input = positionRef.current;
+    if (!input) return;
+    const commit = () => {
+      const raw = input.value.trim();
+      setDraft(null);
+      const n = Math.trunc(Number(raw));
+      if (raw === "" || !Number.isFinite(n)) return;
+      onSeek(Math.min(totalAyat, Math.max(1, n)));
+    };
+    input.addEventListener("change", commit);
+    return () => input.removeEventListener("change", commit);
+  }, [totalAyat, onSeek]);
 
   const calculateProgressPercent = (): number => {
     if (!totalAyat) return 0;
@@ -137,7 +159,33 @@ export function PlayerBar({
       </button>
 
       <div className="player-position" data-testid="player-position">
-        {totalAyat > 0 ? `${currentVerseNum} / ${totalAyat}` : "—"}
+        {totalAyat > 0 ? (
+          <>
+            <input
+              ref={positionRef}
+              id="position-input"
+              name="position"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={totalAyat}
+              step={1}
+              aria-label="Aller au verset"
+              title="Aller au verset"
+              value={draft ?? String(currentVerseNum)}
+              onChange={(e) => {
+                if (e.nativeEvent.type === "input") setDraft(e.currentTarget.value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+              }}
+              onBlur={() => setDraft(null)}
+            />
+            {` / ${totalAyat}`}
+          </>
+        ) : (
+          "—"
+        )}
       </div>
 
       <div
