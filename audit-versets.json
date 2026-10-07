@@ -1,0 +1,2402 @@
+{
+  "genereLe": "2026-10-04T20:05:46.028Z",
+  "sourates": [
+    {
+      "s": 1,
+      "attendu": 7,
+      "reel": 7,
+      "recitant": 1
+    },
+    {
+      "s": 2,
+      "attendu": 285,
+      "reel": 285,
+      "recitant": 1
+    },
+    {
+      "s": 3,
+      "attendu": 200,
+      "reel": 200,
+      "recitant": 1
+    },
+    {
+      "s": 4,
+      "attendu": 175,
+      "reel": 175,
+      "recitant": 1
+    },
+    {
+      "s": 5,
+      "attendu": 122,
+      "reel": 122,
+      "recitant": 1
+    },
+    {
+      "s": 6,
+      "attendu": 167,
+      "reel": 167,
+      "recitant": 1
+    },
+    {
+      "s": 7,
+      "attendu": 206,
+      "reel": 206,
+      "recitant": 1
+    },
+    {
+      "s": 8,
+      "attendu": 76,
+      "reel": 76,
+      "recitant": 1
+    },
+    {
+      "s": 9,
+      "attendu": 130,
+      "reel": 130,
+      "recitant": 1
+    },
+    {
+      "s": 10,
+      "attendu": 109,
+      "reel": 109,
+      "recitant": 1
+    },
+    {
+      "s": 11,
+      "attendu": 121,
+      "reel": 121,
+      "recitant": 1
+    },
+    {
+      "s": 12,
+      "attendu": 111,
+      "reel": 111,
+      "recitant": 1
+    },
+    {
+      "s": 13,
+      "attendu": 44,
+      "reel": 44,
+      "recitant": 1
+    },
+    {
+      "s": 14,
+      "attendu": 54,
+      "reel": 54,
+      "recitant": 1
+    },
+    {
+      "s": 15,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 1
+    },
+    {
+      "s": 16,
+      "attendu": 128,
+      "reel": 128,
+      "recitant": 1
+    },
+    {
+      "s": 17,
+      "attendu": 110,
+      "reel": 110,
+      "recitant": 1
+    },
+    {
+      "s": 18,
+      "attendu": 105,
+      "reel": 105,
+      "recitant": 1
+    },
+    {
+      "s": 19,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 1
+    },
+    {
+      "s": 20,
+      "attendu": 134,
+      "reel": 134,
+      "recitant": 1
+    },
+    {
+      "s": 21,
+      "attendu": 111,
+      "reel": 111,
+      "recitant": 1
+    },
+    {
+      "s": 22,
+      "attendu": 76,
+      "reel": 76,
+      "recitant": 1
+    },
+    {
+      "s": 23,
+      "attendu": 119,
+      "reel": 119,
+      "recitant": 1
+    },
+    {
+      "s": 24,
+      "attendu": 62,
+      "reel": 62,
+      "recitant": 1
+    },
+    {
+      "s": 25,
+      "attendu": 77,
+      "reel": 77,
+      "recitant": 1
+    },
+    {
+      "s": 26,
+      "attendu": 226,
+      "reel": 227,
+      "recitant": 1
+    },
+    {
+      "s": 27,
+      "attendu": 95,
+      "reel": 95,
+      "recitant": 1
+    },
+    {
+      "s": 28,
+      "attendu": 88,
+      "reel": 88,
+      "recitant": 1
+    },
+    {
+      "s": 29,
+      "attendu": 69,
+      "reel": 69,
+      "recitant": 1
+    },
+    {
+      "s": 30,
+      "attendu": 59,
+      "reel": 59,
+      "recitant": 1
+    },
+    {
+      "s": 31,
+      "attendu": 33,
+      "reel": 33,
+      "recitant": 1
+    },
+    {
+      "s": 32,
+      "attendu": 30,
+      "reel": 30,
+      "recitant": 1
+    },
+    {
+      "s": 33,
+      "attendu": 73,
+      "reel": 73,
+      "recitant": 1
+    },
+    {
+      "s": 34,
+      "attendu": 54,
+      "reel": 54,
+      "recitant": 1
+    },
+    {
+      "s": 35,
+      "attendu": 46,
+      "reel": 46,
+      "recitant": 1
+    },
+    {
+      "s": 36,
+      "attendu": 82,
+      "reel": 82,
+      "recitant": 1
+    },
+    {
+      "s": 37,
+      "attendu": 182,
+      "reel": 182,
+      "recitant": 1
+    },
+    {
+      "s": 38,
+      "attendu": 86,
+      "reel": 86,
+      "recitant": 1
+    },
+    {
+      "s": 39,
+      "attendu": 72,
+      "reel": 72,
+      "recitant": 1
+    },
+    {
+      "s": 40,
+      "attendu": 84,
+      "reel": 84,
+      "recitant": 1
+    },
+    {
+      "s": 41,
+      "attendu": 53,
+      "reel": 53,
+      "recitant": 1
+    },
+    {
+      "s": 42,
+      "attendu": 50,
+      "reel": 50,
+      "recitant": 1
+    },
+    {
+      "s": 43,
+      "attendu": 89,
+      "reel": 89,
+      "recitant": 1
+    },
+    {
+      "s": 44,
+      "attendu": 56,
+      "reel": 56,
+      "recitant": 1
+    },
+    {
+      "s": 45,
+      "attendu": 36,
+      "reel": 36,
+      "recitant": 1
+    },
+    {
+      "s": 46,
+      "attendu": 34,
+      "reel": 34,
+      "recitant": 1
+    },
+    {
+      "s": 47,
+      "attendu": 39,
+      "reel": 39,
+      "recitant": 1
+    },
+    {
+      "s": 48,
+      "attendu": 29,
+      "reel": 29,
+      "recitant": 1
+    },
+    {
+      "s": 49,
+      "attendu": 18,
+      "reel": 18,
+      "recitant": 1
+    },
+    {
+      "s": 50,
+      "attendu": 45,
+      "reel": 45,
+      "recitant": 1
+    },
+    {
+      "s": 51,
+      "attendu": 60,
+      "reel": 60,
+      "recitant": 1
+    },
+    {
+      "s": 52,
+      "attendu": 47,
+      "reel": 47,
+      "recitant": 1
+    },
+    {
+      "s": 53,
+      "attendu": 61,
+      "reel": 61,
+      "recitant": 1
+    },
+    {
+      "s": 54,
+      "attendu": 55,
+      "reel": 55,
+      "recitant": 1
+    },
+    {
+      "s": 55,
+      "attendu": 77,
+      "reel": 77,
+      "recitant": 1
+    },
+    {
+      "s": 56,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 1
+    },
+    {
+      "s": 57,
+      "attendu": 28,
+      "reel": 28,
+      "recitant": 1
+    },
+    {
+      "s": 58,
+      "attendu": 21,
+      "reel": 21,
+      "recitant": 1
+    },
+    {
+      "s": 59,
+      "attendu": 24,
+      "reel": 24,
+      "recitant": 1
+    },
+    {
+      "s": 60,
+      "attendu": 13,
+      "reel": 13,
+      "recitant": 1
+    },
+    {
+      "s": 61,
+      "attendu": 14,
+      "reel": 14,
+      "recitant": 1
+    },
+    {
+      "s": 62,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 1
+    },
+    {
+      "s": 63,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 1
+    },
+    {
+      "s": 64,
+      "attendu": 18,
+      "reel": 18,
+      "recitant": 1
+    },
+    {
+      "s": 65,
+      "attendu": 12,
+      "reel": 12,
+      "recitant": 1
+    },
+    {
+      "s": 66,
+      "attendu": 12,
+      "reel": 12,
+      "recitant": 1
+    },
+    {
+      "s": 67,
+      "attendu": 31,
+      "reel": 31,
+      "recitant": 1
+    },
+    {
+      "s": 68,
+      "attendu": 52,
+      "reel": 52,
+      "recitant": 1
+    },
+    {
+      "s": 69,
+      "attendu": 52,
+      "reel": 52,
+      "recitant": 1
+    },
+    {
+      "s": 70,
+      "attendu": 44,
+      "reel": 44,
+      "recitant": 1
+    },
+    {
+      "s": 71,
+      "attendu": 30,
+      "reel": 30,
+      "recitant": 1
+    },
+    {
+      "s": 72,
+      "attendu": 28,
+      "reel": 28,
+      "recitant": 1
+    },
+    {
+      "s": 73,
+      "attendu": 18,
+      "reel": 18,
+      "recitant": 1
+    },
+    {
+      "s": 74,
+      "attendu": 55,
+      "reel": 55,
+      "recitant": 1
+    },
+    {
+      "s": 75,
+      "attendu": 39,
+      "reel": 39,
+      "recitant": 1
+    },
+    {
+      "s": 76,
+      "attendu": 31,
+      "reel": 31,
+      "recitant": 1
+    },
+    {
+      "s": 77,
+      "attendu": 50,
+      "reel": 50,
+      "recitant": 1
+    },
+    {
+      "s": 78,
+      "attendu": 40,
+      "reel": 40,
+      "recitant": 1
+    },
+    {
+      "s": 79,
+      "attendu": 45,
+      "reel": 45,
+      "recitant": 1
+    },
+    {
+      "s": 80,
+      "attendu": 42,
+      "reel": 42,
+      "recitant": 1
+    },
+    {
+      "s": 81,
+      "attendu": 29,
+      "reel": 29,
+      "recitant": 1
+    },
+    {
+      "s": 82,
+      "attendu": 19,
+      "reel": 19,
+      "recitant": 1
+    },
+    {
+      "s": 83,
+      "attendu": 36,
+      "reel": 36,
+      "recitant": 1
+    },
+    {
+      "s": 84,
+      "attendu": 25,
+      "reel": 25,
+      "recitant": 1
+    },
+    {
+      "s": 85,
+      "attendu": 22,
+      "reel": 22,
+      "recitant": 1
+    },
+    {
+      "s": 86,
+      "attendu": 17,
+      "reel": 17,
+      "recitant": 1
+    },
+    {
+      "s": 87,
+      "attendu": 19,
+      "reel": 19,
+      "recitant": 1
+    },
+    {
+      "s": 88,
+      "attendu": 26,
+      "reel": 26,
+      "recitant": 1
+    },
+    {
+      "s": 89,
+      "attendu": 32,
+      "reel": 32,
+      "recitant": 1
+    },
+    {
+      "s": 90,
+      "attendu": 20,
+      "reel": 20,
+      "recitant": 1
+    },
+    {
+      "s": 91,
+      "attendu": 15,
+      "reel": 15,
+      "recitant": 1
+    },
+    {
+      "s": 92,
+      "attendu": 21,
+      "reel": 21,
+      "recitant": 1
+    },
+    {
+      "s": 93,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 1
+    },
+    {
+      "s": 94,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 1
+    },
+    {
+      "s": 95,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 1
+    },
+    {
+      "s": 96,
+      "attendu": 20,
+      "reel": 20,
+      "recitant": 1
+    },
+    {
+      "s": 97,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 1
+    },
+    {
+      "s": 98,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 1
+    },
+    {
+      "s": 99,
+      "attendu": 9,
+      "reel": 9,
+      "recitant": 1
+    },
+    {
+      "s": 100,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 1
+    },
+    {
+      "s": 101,
+      "attendu": 10,
+      "reel": 10,
+      "recitant": 1
+    },
+    {
+      "s": 102,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 1
+    },
+    {
+      "s": 103,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 1
+    },
+    {
+      "s": 104,
+      "attendu": 9,
+      "reel": 9,
+      "recitant": 1
+    },
+    {
+      "s": 105,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 1
+    },
+    {
+      "s": 106,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 1
+    },
+    {
+      "s": 107,
+      "attendu": 6,
+      "reel": 6,
+      "recitant": 1
+    },
+    {
+      "s": 108,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 1
+    },
+    {
+      "s": 109,
+      "attendu": 6,
+      "reel": 6,
+      "recitant": 1
+    },
+    {
+      "s": 110,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 1
+    },
+    {
+      "s": 111,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 1
+    },
+    {
+      "s": 112,
+      "attendu": 4,
+      "reel": 4,
+      "recitant": 1
+    },
+    {
+      "s": 113,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 1
+    },
+    {
+      "s": 114,
+      "attendu": 6,
+      "reel": 6,
+      "recitant": 1
+    },
+    {
+      "s": 1,
+      "attendu": 7,
+      "reel": 7,
+      "recitant": 2
+    },
+    {
+      "s": 2,
+      "attendu": 285,
+      "reel": 286,
+      "recitant": 2
+    },
+    {
+      "s": 3,
+      "attendu": 200,
+      "reel": 200,
+      "recitant": 2
+    },
+    {
+      "s": 4,
+      "attendu": 175,
+      "reel": 176,
+      "recitant": 2
+    },
+    {
+      "s": 5,
+      "attendu": 122,
+      "reel": 122,
+      "recitant": 2
+    },
+    {
+      "s": 6,
+      "attendu": 167,
+      "reel": 167,
+      "recitant": 2
+    },
+    {
+      "s": 7,
+      "attendu": 206,
+      "reel": 206,
+      "recitant": 2
+    },
+    {
+      "s": 8,
+      "attendu": 76,
+      "reel": 76,
+      "recitant": 2
+    },
+    {
+      "s": 9,
+      "attendu": 130,
+      "reel": 130,
+      "recitant": 2
+    },
+    {
+      "s": 10,
+      "attendu": 109,
+      "reel": 109,
+      "recitant": 2
+    },
+    {
+      "s": 11,
+      "attendu": 121,
+      "reel": 123,
+      "recitant": 2
+    },
+    {
+      "s": 12,
+      "attendu": 111,
+      "reel": 111,
+      "recitant": 2
+    },
+    {
+      "s": 13,
+      "attendu": 44,
+      "reel": 44,
+      "recitant": 2
+    },
+    {
+      "s": 14,
+      "attendu": 54,
+      "reel": 54,
+      "recitant": 2
+    },
+    {
+      "s": 15,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 2
+    },
+    {
+      "s": 16,
+      "attendu": 128,
+      "reel": 128,
+      "recitant": 2
+    },
+    {
+      "s": 17,
+      "attendu": 110,
+      "reel": 111,
+      "recitant": 2
+    },
+    {
+      "s": 18,
+      "attendu": 105,
+      "reel": 110,
+      "recitant": 2
+    },
+    {
+      "s": 19,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 2
+    },
+    {
+      "s": 20,
+      "attendu": 134,
+      "reel": 135,
+      "recitant": 2
+    },
+    {
+      "s": 21,
+      "attendu": 111,
+      "reel": 112,
+      "recitant": 2
+    },
+    {
+      "s": 22,
+      "attendu": 76,
+      "reel": 78,
+      "recitant": 2
+    },
+    {
+      "s": 23,
+      "attendu": 119,
+      "reel": 119,
+      "recitant": 2
+    },
+    {
+      "s": 24,
+      "attendu": 62,
+      "reel": 64,
+      "recitant": 2
+    },
+    {
+      "s": 25,
+      "attendu": 77,
+      "reel": 77,
+      "recitant": 2
+    },
+    {
+      "s": 26,
+      "attendu": 226,
+      "reel": 227,
+      "recitant": 2
+    },
+    {
+      "s": 27,
+      "attendu": 95,
+      "reel": 95,
+      "recitant": 2
+    },
+    {
+      "s": 28,
+      "attendu": 88,
+      "reel": 88,
+      "recitant": 2
+    },
+    {
+      "s": 29,
+      "attendu": 69,
+      "reel": 69,
+      "recitant": 2
+    },
+    {
+      "s": 30,
+      "attendu": 59,
+      "reel": 60,
+      "recitant": 2
+    },
+    {
+      "s": 31,
+      "attendu": 33,
+      "reel": 34,
+      "recitant": 2
+    },
+    {
+      "s": 32,
+      "attendu": 30,
+      "reel": 30,
+      "recitant": 2
+    },
+    {
+      "s": 33,
+      "attendu": 73,
+      "reel": 73,
+      "recitant": 2
+    },
+    {
+      "s": 34,
+      "attendu": 54,
+      "reel": 54,
+      "recitant": 2
+    },
+    {
+      "s": 35,
+      "attendu": 46,
+      "reel": 46,
+      "recitant": 2
+    },
+    {
+      "s": 36,
+      "attendu": 82,
+      "reel": 83,
+      "recitant": 2
+    },
+    {
+      "s": 37,
+      "attendu": 182,
+      "reel": 182,
+      "recitant": 2
+    },
+    {
+      "s": 38,
+      "attendu": 86,
+      "reel": 88,
+      "recitant": 2
+    },
+    {
+      "s": 39,
+      "attendu": 72,
+      "reel": 75,
+      "recitant": 2
+    },
+    {
+      "s": 40,
+      "attendu": 84,
+      "reel": 85,
+      "recitant": 2
+    },
+    {
+      "s": 41,
+      "attendu": 53,
+      "reel": 54,
+      "recitant": 2
+    },
+    {
+      "s": 42,
+      "attendu": 50,
+      "reel": 53,
+      "recitant": 2
+    },
+    {
+      "s": 43,
+      "attendu": 89,
+      "reel": 89,
+      "recitant": 2
+    },
+    {
+      "s": 44,
+      "attendu": 56,
+      "reel": 59,
+      "recitant": 2
+    },
+    {
+      "s": 45,
+      "attendu": 36,
+      "reel": 37,
+      "recitant": 2
+    },
+    {
+      "s": 46,
+      "attendu": 34,
+      "reel": 35,
+      "recitant": 2
+    },
+    {
+      "s": 47,
+      "attendu": 39,
+      "reel": 39,
+      "recitant": 2
+    },
+    {
+      "s": 48,
+      "attendu": 29,
+      "reel": 29,
+      "recitant": 2
+    },
+    {
+      "s": 49,
+      "attendu": 18,
+      "reel": 18,
+      "recitant": 2
+    },
+    {
+      "s": 50,
+      "attendu": 45,
+      "reel": 45,
+      "recitant": 2
+    },
+    {
+      "s": 51,
+      "attendu": 60,
+      "reel": 60,
+      "recitant": 2
+    },
+    {
+      "s": 52,
+      "attendu": 47,
+      "reel": 49,
+      "recitant": 2
+    },
+    {
+      "s": 53,
+      "attendu": 61,
+      "reel": 62,
+      "recitant": 2
+    },
+    {
+      "s": 54,
+      "attendu": 55,
+      "reel": 55,
+      "recitant": 2
+    },
+    {
+      "s": 55,
+      "attendu": 77,
+      "reel": 78,
+      "recitant": 2
+    },
+    {
+      "s": 56,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 2
+    },
+    {
+      "s": 57,
+      "attendu": 28,
+      "reel": 29,
+      "recitant": 2
+    },
+    {
+      "s": 58,
+      "attendu": 21,
+      "reel": 22,
+      "recitant": 2
+    },
+    {
+      "s": 59,
+      "attendu": 24,
+      "reel": 24,
+      "recitant": 2
+    },
+    {
+      "s": 60,
+      "attendu": 13,
+      "reel": 13,
+      "recitant": 2
+    },
+    {
+      "s": 61,
+      "attendu": 14,
+      "reel": 14,
+      "recitant": 2
+    },
+    {
+      "s": 62,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 2
+    },
+    {
+      "s": 63,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 2
+    },
+    {
+      "s": 64,
+      "attendu": 18,
+      "reel": 18,
+      "recitant": 2
+    },
+    {
+      "s": 65,
+      "attendu": 12,
+      "reel": 12,
+      "recitant": 2
+    },
+    {
+      "s": 66,
+      "attendu": 12,
+      "reel": 12,
+      "recitant": 2
+    },
+    {
+      "s": 67,
+      "attendu": 31,
+      "reel": 31,
+      "recitant": 2
+    },
+    {
+      "s": 68,
+      "attendu": 52,
+      "reel": 52,
+      "recitant": 2
+    },
+    {
+      "s": 69,
+      "attendu": 52,
+      "reel": 52,
+      "recitant": 2
+    },
+    {
+      "s": 70,
+      "attendu": 44,
+      "reel": 44,
+      "recitant": 2
+    },
+    {
+      "s": 71,
+      "attendu": 30,
+      "reel": 30,
+      "recitant": 2
+    },
+    {
+      "s": 72,
+      "attendu": 28,
+      "reel": 28,
+      "recitant": 2
+    },
+    {
+      "s": 73,
+      "attendu": 18,
+      "reel": 20,
+      "recitant": 2
+    },
+    {
+      "s": 74,
+      "attendu": 55,
+      "reel": 56,
+      "recitant": 2
+    },
+    {
+      "s": 75,
+      "attendu": 39,
+      "reel": 40,
+      "recitant": 2
+    },
+    {
+      "s": 76,
+      "attendu": 31,
+      "reel": 31,
+      "recitant": 2
+    },
+    {
+      "s": 77,
+      "attendu": 50,
+      "reel": 50,
+      "recitant": 2
+    },
+    {
+      "s": 78,
+      "attendu": 40,
+      "reel": 40,
+      "recitant": 2
+    },
+    {
+      "s": 79,
+      "attendu": 45,
+      "reel": 46,
+      "recitant": 2
+    },
+    {
+      "s": 80,
+      "attendu": 42,
+      "reel": 42,
+      "recitant": 2
+    },
+    {
+      "s": 81,
+      "attendu": 29,
+      "reel": 29,
+      "recitant": 2
+    },
+    {
+      "s": 82,
+      "attendu": 19,
+      "reel": 19,
+      "recitant": 2
+    },
+    {
+      "s": 83,
+      "attendu": 36,
+      "reel": 36,
+      "recitant": 2
+    },
+    {
+      "s": 84,
+      "attendu": 25,
+      "reel": 25,
+      "recitant": 2
+    },
+    {
+      "s": 85,
+      "attendu": 22,
+      "reel": 22,
+      "recitant": 2
+    },
+    {
+      "s": 86,
+      "attendu": 17,
+      "reel": 17,
+      "recitant": 2
+    },
+    {
+      "s": 87,
+      "attendu": 19,
+      "reel": 19,
+      "recitant": 2
+    },
+    {
+      "s": 88,
+      "attendu": 26,
+      "reel": 26,
+      "recitant": 2
+    },
+    {
+      "s": 89,
+      "attendu": 32,
+      "reel": 32,
+      "recitant": 2
+    },
+    {
+      "s": 90,
+      "attendu": 20,
+      "reel": 20,
+      "recitant": 2
+    },
+    {
+      "s": 91,
+      "attendu": 15,
+      "reel": 15,
+      "recitant": 2
+    },
+    {
+      "s": 92,
+      "attendu": 21,
+      "reel": 21,
+      "recitant": 2
+    },
+    {
+      "s": 93,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 2
+    },
+    {
+      "s": 94,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 2
+    },
+    {
+      "s": 95,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 2
+    },
+    {
+      "s": 96,
+      "attendu": 20,
+      "reel": 20,
+      "recitant": 2
+    },
+    {
+      "s": 97,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 2
+    },
+    {
+      "s": 98,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 2
+    },
+    {
+      "s": 99,
+      "attendu": 9,
+      "reel": 9,
+      "recitant": 2
+    },
+    {
+      "s": 100,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 2
+    },
+    {
+      "s": 101,
+      "attendu": 10,
+      "reel": 11,
+      "recitant": 2
+    },
+    {
+      "s": 102,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 2
+    },
+    {
+      "s": 103,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 2
+    },
+    {
+      "s": 104,
+      "attendu": 9,
+      "reel": 9,
+      "recitant": 2
+    },
+    {
+      "s": 105,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 2
+    },
+    {
+      "s": 106,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 2
+    },
+    {
+      "s": 107,
+      "attendu": 6,
+      "reel": 7,
+      "recitant": 2
+    },
+    {
+      "s": 108,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 2
+    },
+    {
+      "s": 109,
+      "attendu": 6,
+      "reel": 6,
+      "recitant": 2
+    },
+    {
+      "s": 110,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 2
+    },
+    {
+      "s": 111,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 2
+    },
+    {
+      "s": 112,
+      "attendu": 4,
+      "reel": 4,
+      "recitant": 2
+    },
+    {
+      "s": 113,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 2
+    },
+    {
+      "s": 114,
+      "attendu": 6,
+      "reel": 6,
+      "recitant": 2
+    },
+    {
+      "s": 1,
+      "attendu": 7,
+      "reel": 7,
+      "recitant": 3
+    },
+    {
+      "s": 2,
+      "attendu": 285,
+      "reel": 286,
+      "recitant": 3
+    },
+    {
+      "s": 3,
+      "attendu": 200,
+      "reel": 200,
+      "recitant": 3
+    },
+    {
+      "s": 4,
+      "attendu": 175,
+      "reel": 176,
+      "recitant": 3
+    },
+    {
+      "s": 5,
+      "attendu": 122,
+      "reel": 122,
+      "recitant": 3
+    },
+    {
+      "s": 6,
+      "attendu": 167,
+      "reel": 167,
+      "recitant": 3
+    },
+    {
+      "s": 7,
+      "attendu": 206,
+      "reel": 206,
+      "recitant": 3
+    },
+    {
+      "s": 8,
+      "attendu": 76,
+      "reel": 76,
+      "recitant": 3
+    },
+    {
+      "s": 9,
+      "attendu": 130,
+      "reel": 130,
+      "recitant": 3
+    },
+    {
+      "s": 10,
+      "attendu": 109,
+      "reel": 109,
+      "recitant": 3
+    },
+    {
+      "s": 11,
+      "attendu": 121,
+      "reel": 123,
+      "recitant": 3
+    },
+    {
+      "s": 12,
+      "attendu": 111,
+      "reel": 111,
+      "recitant": 3
+    },
+    {
+      "s": 13,
+      "attendu": 44,
+      "reel": 44,
+      "recitant": 3
+    },
+    {
+      "s": 14,
+      "attendu": 54,
+      "reel": 54,
+      "recitant": 3
+    },
+    {
+      "s": 15,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 3
+    },
+    {
+      "s": 16,
+      "attendu": 128,
+      "reel": 128,
+      "recitant": 3
+    },
+    {
+      "s": 17,
+      "attendu": 110,
+      "reel": 111,
+      "recitant": 3
+    },
+    {
+      "s": 18,
+      "attendu": 105,
+      "reel": 110,
+      "recitant": 3
+    },
+    {
+      "s": 19,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 3
+    },
+    {
+      "s": 20,
+      "attendu": 134,
+      "reel": 135,
+      "recitant": 3
+    },
+    {
+      "s": 21,
+      "attendu": 111,
+      "reel": 112,
+      "recitant": 3
+    },
+    {
+      "s": 22,
+      "attendu": 76,
+      "reel": 78,
+      "recitant": 3
+    },
+    {
+      "s": 23,
+      "attendu": 119,
+      "reel": 119,
+      "recitant": 3
+    },
+    {
+      "s": 24,
+      "attendu": 62,
+      "reel": 64,
+      "recitant": 3
+    },
+    {
+      "s": 25,
+      "attendu": 77,
+      "reel": 77,
+      "recitant": 3
+    },
+    {
+      "s": 26,
+      "attendu": 226,
+      "reel": 227,
+      "recitant": 3
+    },
+    {
+      "s": 27,
+      "attendu": 95,
+      "reel": 95,
+      "recitant": 3
+    },
+    {
+      "s": 28,
+      "attendu": 88,
+      "reel": 88,
+      "recitant": 3
+    },
+    {
+      "s": 29,
+      "attendu": 69,
+      "reel": 69,
+      "recitant": 3
+    },
+    {
+      "s": 30,
+      "attendu": 59,
+      "reel": 60,
+      "recitant": 3
+    },
+    {
+      "s": 31,
+      "attendu": 33,
+      "reel": 34,
+      "recitant": 3
+    },
+    {
+      "s": 32,
+      "attendu": 30,
+      "reel": 30,
+      "recitant": 3
+    },
+    {
+      "s": 33,
+      "attendu": 73,
+      "reel": 73,
+      "recitant": 3
+    },
+    {
+      "s": 34,
+      "attendu": 54,
+      "reel": 54,
+      "recitant": 3
+    },
+    {
+      "s": 35,
+      "attendu": 46,
+      "reel": 46,
+      "recitant": 3
+    },
+    {
+      "s": 36,
+      "attendu": 82,
+      "reel": 83,
+      "recitant": 3
+    },
+    {
+      "s": 37,
+      "attendu": 182,
+      "reel": 182,
+      "recitant": 3
+    },
+    {
+      "s": 38,
+      "attendu": 86,
+      "reel": 88,
+      "recitant": 3
+    },
+    {
+      "s": 39,
+      "attendu": 72,
+      "reel": 75,
+      "recitant": 3
+    },
+    {
+      "s": 40,
+      "attendu": 84,
+      "reel": 85,
+      "recitant": 3
+    },
+    {
+      "s": 41,
+      "attendu": 53,
+      "reel": 54,
+      "recitant": 3
+    },
+    {
+      "s": 42,
+      "attendu": 50,
+      "reel": 53,
+      "recitant": 3
+    },
+    {
+      "s": 43,
+      "attendu": 89,
+      "reel": 89,
+      "recitant": 3
+    },
+    {
+      "s": 44,
+      "attendu": 56,
+      "reel": 59,
+      "recitant": 3
+    },
+    {
+      "s": 45,
+      "attendu": 36,
+      "reel": 37,
+      "recitant": 3
+    },
+    {
+      "s": 46,
+      "attendu": 34,
+      "reel": 35,
+      "recitant": 3
+    },
+    {
+      "s": 47,
+      "attendu": 39,
+      "reel": 39,
+      "recitant": 3
+    },
+    {
+      "s": 48,
+      "attendu": 29,
+      "reel": 29,
+      "recitant": 3
+    },
+    {
+      "s": 49,
+      "attendu": 18,
+      "reel": 18,
+      "recitant": 3
+    },
+    {
+      "s": 50,
+      "attendu": 45,
+      "reel": 45,
+      "recitant": 3
+    },
+    {
+      "s": 51,
+      "attendu": 60,
+      "reel": 60,
+      "recitant": 3
+    },
+    {
+      "s": 52,
+      "attendu": 47,
+      "reel": 49,
+      "recitant": 3
+    },
+    {
+      "s": 53,
+      "attendu": 61,
+      "reel": 62,
+      "recitant": 3
+    },
+    {
+      "s": 54,
+      "attendu": 55,
+      "reel": 55,
+      "recitant": 3
+    },
+    {
+      "s": 55,
+      "attendu": 77,
+      "reel": 78,
+      "recitant": 3
+    },
+    {
+      "s": 56,
+      "attendu": 99,
+      "reel": 99,
+      "recitant": 3
+    },
+    {
+      "s": 57,
+      "attendu": 28,
+      "reel": 29,
+      "recitant": 3
+    },
+    {
+      "s": 58,
+      "attendu": 21,
+      "reel": 22,
+      "recitant": 3
+    },
+    {
+      "s": 59,
+      "attendu": 24,
+      "reel": 24,
+      "recitant": 3
+    },
+    {
+      "s": 60,
+      "attendu": 13,
+      "reel": 13,
+      "recitant": 3
+    },
+    {
+      "s": 61,
+      "attendu": 14,
+      "reel": 14,
+      "recitant": 3
+    },
+    {
+      "s": 62,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 3
+    },
+    {
+      "s": 63,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 3
+    },
+    {
+      "s": 64,
+      "attendu": 18,
+      "reel": 18,
+      "recitant": 3
+    },
+    {
+      "s": 65,
+      "attendu": 12,
+      "reel": 12,
+      "recitant": 3
+    },
+    {
+      "s": 66,
+      "attendu": 12,
+      "reel": 12,
+      "recitant": 3
+    },
+    {
+      "s": 67,
+      "attendu": 31,
+      "reel": 31,
+      "recitant": 3
+    },
+    {
+      "s": 68,
+      "attendu": 52,
+      "reel": 52,
+      "recitant": 3
+    },
+    {
+      "s": 69,
+      "attendu": 52,
+      "reel": 52,
+      "recitant": 3
+    },
+    {
+      "s": 70,
+      "attendu": 44,
+      "reel": 44,
+      "recitant": 3
+    },
+    {
+      "s": 71,
+      "attendu": 30,
+      "reel": 30,
+      "recitant": 3
+    },
+    {
+      "s": 72,
+      "attendu": 28,
+      "reel": 28,
+      "recitant": 3
+    },
+    {
+      "s": 73,
+      "attendu": 18,
+      "reel": 20,
+      "recitant": 3
+    },
+    {
+      "s": 74,
+      "attendu": 55,
+      "reel": 56,
+      "recitant": 3
+    },
+    {
+      "s": 75,
+      "attendu": 39,
+      "reel": 40,
+      "recitant": 3
+    },
+    {
+      "s": 76,
+      "attendu": 31,
+      "reel": 31,
+      "recitant": 3
+    },
+    {
+      "s": 77,
+      "attendu": 50,
+      "reel": 50,
+      "recitant": 3
+    },
+    {
+      "s": 78,
+      "attendu": 40,
+      "reel": 40,
+      "recitant": 3
+    },
+    {
+      "s": 79,
+      "attendu": 45,
+      "reel": 46,
+      "recitant": 3
+    },
+    {
+      "s": 80,
+      "attendu": 42,
+      "reel": 42,
+      "recitant": 3
+    },
+    {
+      "s": 81,
+      "attendu": 29,
+      "reel": 29,
+      "recitant": 3
+    },
+    {
+      "s": 82,
+      "attendu": 19,
+      "reel": 19,
+      "recitant": 3
+    },
+    {
+      "s": 83,
+      "attendu": 36,
+      "reel": 36,
+      "recitant": 3
+    },
+    {
+      "s": 84,
+      "attendu": 25,
+      "reel": 25,
+      "recitant": 3
+    },
+    {
+      "s": 85,
+      "attendu": 22,
+      "reel": 22,
+      "recitant": 3
+    },
+    {
+      "s": 86,
+      "attendu": 17,
+      "reel": 17,
+      "recitant": 3
+    },
+    {
+      "s": 87,
+      "attendu": 19,
+      "reel": 19,
+      "recitant": 3
+    },
+    {
+      "s": 88,
+      "attendu": 26,
+      "reel": 26,
+      "recitant": 3
+    },
+    {
+      "s": 89,
+      "attendu": 32,
+      "reel": 32,
+      "recitant": 3
+    },
+    {
+      "s": 90,
+      "attendu": 20,
+      "reel": 20,
+      "recitant": 3
+    },
+    {
+      "s": 91,
+      "attendu": 15,
+      "reel": 15,
+      "recitant": 3
+    },
+    {
+      "s": 92,
+      "attendu": 21,
+      "reel": 21,
+      "recitant": 3
+    },
+    {
+      "s": 93,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 3
+    },
+    {
+      "s": 94,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 3
+    },
+    {
+      "s": 95,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 3
+    },
+    {
+      "s": 96,
+      "attendu": 20,
+      "reel": 20,
+      "recitant": 3
+    },
+    {
+      "s": 97,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 3
+    },
+    {
+      "s": 98,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 3
+    },
+    {
+      "s": 99,
+      "attendu": 9,
+      "reel": 9,
+      "recitant": 3
+    },
+    {
+      "s": 100,
+      "attendu": 11,
+      "reel": 11,
+      "recitant": 3
+    },
+    {
+      "s": 101,
+      "attendu": 10,
+      "reel": 11,
+      "recitant": 3
+    },
+    {
+      "s": 102,
+      "attendu": 8,
+      "reel": 8,
+      "recitant": 3
+    },
+    {
+      "s": 103,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 3
+    },
+    {
+      "s": 104,
+      "attendu": 9,
+      "reel": 9,
+      "recitant": 3
+    },
+    {
+      "s": 105,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 3
+    },
+    {
+      "s": 106,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 3
+    },
+    {
+      "s": 107,
+      "attendu": 6,
+      "reel": 7,
+      "recitant": 3
+    },
+    {
+      "s": 108,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 3
+    },
+    {
+      "s": 109,
+      "attendu": 6,
+      "reel": 6,
+      "recitant": 3
+    },
+    {
+      "s": 110,
+      "attendu": 3,
+      "reel": 3,
+      "recitant": 3
+    },
+    {
+      "s": 111,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 3
+    },
+    {
+      "s": 112,
+      "attendu": 4,
+      "reel": 4,
+      "recitant": 3
+    },
+    {
+      "s": 113,
+      "attendu": 5,
+      "reel": 5,
+      "recitant": 3
+    },
+    {
+      "s": 114,
+      "attendu": 6,
+      "reel": 6,
+      "recitant": 3
+    }
+  ],
+  "recitants": {
+    "1": {
+      "dossier": "warsh_Abdul_Basit_128kbps",
+      "souratesEnDesaccord": 1,
+      "ecarts": [
+        {
+          "s": 26,
+          "attendu": 226,
+          "reel": 227
+        }
+      ]
+    },
+    "2": {
+      "dossier": "warsh_ibrahim_aldosary_128kbps",
+      "souratesEnDesaccord": 32,
+      "ecarts": [
+        {
+          "s": 2,
+          "attendu": 285,
+          "reel": 286
+        },
+        {
+          "s": 4,
+          "attendu": 175,
+          "reel": 176
+        },
+        {
+          "s": 11,
+          "attendu": 121,
+          "reel": 123
+        },
+        {
+          "s": 17,
+          "attendu": 110,
+          "reel": 111
+        },
+        {
+          "s": 18,
+          "attendu": 105,
+          "reel": 110
+        },
+        {
+          "s": 20,
+          "attendu": 134,
+          "reel": 135
+        },
+        {
+          "s": 21,
+          "attendu": 111,
+          "reel": 112
+        },
+        {
+          "s": 22,
+          "attendu": 76,
+          "reel": 78
+        },
+        {
+          "s": 24,
+          "attendu": 62,
+          "reel": 64
+        },
+        {
+          "s": 26,
+          "attendu": 226,
+          "reel": 227
+        },
+        {
+          "s": 30,
+          "attendu": 59,
+          "reel": 60
+        },
+        {
+          "s": 31,
+          "attendu": 33,
+          "reel": 34
+        },
+        {
+          "s": 36,
+          "attendu": 82,
+          "reel": 83
+        },
+        {
+          "s": 38,
+          "attendu": 86,
+          "reel": 88
+        },
+        {
+          "s": 39,
+          "attendu": 72,
+          "reel": 75
+        },
+        {
+          "s": 40,
+          "attendu": 84,
+          "reel": 85
+        },
+        {
+          "s": 41,
+          "attendu": 53,
+          "reel": 54
+        },
+        {
+          "s": 42,
+          "attendu": 50,
+          "reel": 53
+        },
+        {
+          "s": 44,
+          "attendu": 56,
+          "reel": 59
+        },
+        {
+          "s": 45,
+          "attendu": 36,
+          "reel": 37
+        },
+        {
+          "s": 46,
+          "attendu": 34,
+          "reel": 35
+        },
+        {
+          "s": 52,
+          "attendu": 47,
+          "reel": 49
+        },
+        {
+          "s": 53,
+          "attendu": 61,
+          "reel": 62
+        },
+        {
+          "s": 55,
+          "attendu": 77,
+          "reel": 78
+        },
+        {
+          "s": 57,
+          "attendu": 28,
+          "reel": 29
+        },
+        {
+          "s": 58,
+          "attendu": 21,
+          "reel": 22
+        },
+        {
+          "s": 73,
+          "attendu": 18,
+          "reel": 20
+        },
+        {
+          "s": 74,
+          "attendu": 55,
+          "reel": 56
+        },
+        {
+          "s": 75,
+          "attendu": 39,
+          "reel": 40
+        },
+        {
+          "s": 79,
+          "attendu": 45,
+          "reel": 46
+        },
+        {
+          "s": 101,
+          "attendu": 10,
+          "reel": 11
+        },
+        {
+          "s": 107,
+          "attendu": 6,
+          "reel": 7
+        }
+      ]
+    },
+    "3": {
+      "dossier": "warsh_yassin_al_jazaery_64kbps",
+      "souratesEnDesaccord": 32,
+      "ecarts": [
+        {
+          "s": 2,
+          "attendu": 285,
+          "reel": 286
+        },
+        {
+          "s": 4,
+          "attendu": 175,
+          "reel": 176
+        },
+        {
+          "s": 11,
+          "attendu": 121,
+          "reel": 123
+        },
+        {
+          "s": 17,
+          "attendu": 110,
+          "reel": 111
+        },
+        {
+          "s": 18,
+          "attendu": 105,
+          "reel": 110
+        },
+        {
+          "s": 20,
+          "attendu": 134,
+          "reel": 135
+        },
+        {
+          "s": 21,
+          "attendu": 111,
+          "reel": 112
+        },
+        {
+          "s": 22,
+          "attendu": 76,
+          "reel": 78
+        },
+        {
+          "s": 24,
+          "attendu": 62,
+          "reel": 64
+        },
+        {
+          "s": 26,
+          "attendu": 226,
+          "reel": 227
+        },
+        {
+          "s": 30,
+          "attendu": 59,
+          "reel": 60
+        },
+        {
+          "s": 31,
+          "attendu": 33,
+          "reel": 34
+        },
+        {
+          "s": 36,
+          "attendu": 82,
+          "reel": 83
+        },
+        {
+          "s": 38,
+          "attendu": 86,
+          "reel": 88
+        },
+        {
+          "s": 39,
+          "attendu": 72,
+          "reel": 75
+        },
+        {
+          "s": 40,
+          "attendu": 84,
+          "reel": 85
+        },
+        {
+          "s": 41,
+          "attendu": 53,
+          "reel": 54
+        },
+        {
+          "s": 42,
+          "attendu": 50,
+          "reel": 53
+        },
+        {
+          "s": 44,
+          "attendu": 56,
+          "reel": 59
+        },
+        {
+          "s": 45,
+          "attendu": 36,
+          "reel": 37
+        },
+        {
+          "s": 46,
+          "attendu": 34,
+          "reel": 35
+        },
+        {
+          "s": 52,
+          "attendu": 47,
+          "reel": 49
+        },
+        {
+          "s": 53,
+          "attendu": 61,
+          "reel": 62
+        },
+        {
+          "s": 55,
+          "attendu": 77,
+          "reel": 78
+        },
+        {
+          "s": 57,
+          "attendu": 28,
+          "reel": 29
+        },
+        {
+          "s": 58,
+          "attendu": 21,
+          "reel": 22
+        },
+        {
+          "s": 73,
+          "attendu": 18,
+          "reel": 20
+        },
+        {
+          "s": 74,
+          "attendu": 55,
+          "reel": 56
+        },
+        {
+          "s": 75,
+          "attendu": 39,
+          "reel": 40
+        },
+        {
+          "s": 79,
+          "attendu": 45,
+          "reel": 46
+        },
+        {
+          "s": 101,
+          "attendu": 10,
+          "reel": 11
+        },
+        {
+          "s": 107,
+          "attendu": 6,
+          "reel": 7
+        }
+      ]
+    }
+  }
+}

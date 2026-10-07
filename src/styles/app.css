@@ -1,0 +1,381 @@
+/* Nuit enluminee — le theme de la page de lecture.
+ *
+ * Tout ce qui etait en `style={...}` inline dans les composants passe ici : le style
+ * inline bat une classe CSS, donc sans ce transfert la feuille ne pourrait rien
+ * imposer. Les composants ne perdent que leurs attributs `style`, jamais leurs props.
+ *
+ * Palette : bleu nuit profond, or, creme. Les tokens sont en `:root` pour qu'un
+ * theme clair puisse les surcharger un jour sans toucher aux composants.
+ */
+
+:root {
+  /* Fonds */
+  --nuit-fond: #14161f;
+  --nuit-panneau: #1e2130;
+  --nuit-panneau-clair: #262a3b;
+  --bordure: #2e3243;
+
+  /* Or */
+  --or: #d4af37;
+  --or-pale: #f0d98a;
+  --or-bord: #6b5a2a;
+  --or-voile: rgba(212, 175, 55, 0.12);
+
+  /* Texte */
+  --creme: #ece5d3;
+  --texte-doux: #a9a08a;
+  --texte-faible: #6f6a5c;
+
+  --transition: 0.18s ease;
+
+  /* Regiette de lecture : le SEUL reglage de taille du theme.
+   *
+   * Le corps du verset suit la largeur de la fenetre entre 1.55rem (plancher, telephone)
+   * et 3.25rem (plafond, atteint a 1529px de fenetre). Tout ce qui est mesure dans le
+   * texte — medaillon, bordures, marges, titre de sourate, ref juz:page — se derive de
+   * cette variable en `calc()`. Un seul endroit a toucher pour changer l'echelle, et les
+   * proportions restent celles d'origine a tous les regimes.
+   */
+  --corps-verset: clamp(1.55rem, 3.4vw, 3.25rem);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--nuit-fond);
+  color: var(--creme);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  /* Lueur tres discrete derriere la colonne : evite l'aplat froid. */
+  background-image: radial-gradient(
+    ellipse 70% 45% at 50% 0%,
+    rgba(212, 175, 55, 0.07),
+    transparent 70%
+  );
+  background-attachment: fixed;
+}
+
+/* ---------------------------------------------------------------- en-tete */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--nuit-panneau);
+  border-bottom: 1px solid var(--or-bord);
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+  padding: 12px 20px;
+}
+
+.app-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--or);
+}
+
+.app-header-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* ------------------------------------------------------------- page de lecture */
+
+.app-main {
+  padding: 16px 20px 80px;
+}
+
+.surah-heading {
+  margin: 28px auto 6px;
+  max-width: 68rem;
+  text-align: center;
+  /* 1.03 : le titre gardait 2rem face a un verset de 1.95rem. */
+  font-size: calc(var(--corps-verset) * 1.03);
+  font-weight: 500;
+  line-height: 1.6;
+  color: var(--or-pale);
+}
+
+/* Double filet dore sous le titre de la sourate. */
+.surah-heading::after {
+  content: "❁ ❁ ❁";
+  display: block;
+  margin-top: 6px;
+  font-size: calc(var(--corps-verset) * 0.36);
+  letter-spacing: 0.3em;
+  color: var(--or);
+  opacity: 0.65;
+}
+
+/* ------------------------------------------------------------------ ayahs */
+
+.ayah-list-container {
+  max-width: 68rem;
+  margin: 0 auto;
+}
+
+.ayah-list-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+/* La numerotation de <ol> est remplacee par le medaillon dore. */
+.ayah-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ayah {
+  display: block;
+  /* Le medaillon est une boite INLINE : c'est le `text-align` de son conteneur qui le
+   * positionne. Sans ca il se colle au bord gauche du bloc. */
+  text-align: center;
+  /* 0.5 / 0.7 : les marges valaient 14px 18px face a un texte de 31px. */
+  padding: calc(var(--corps-verset) * 0.5) calc(var(--corps-verset) * 0.7);
+  border-radius: 10px;
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
+  cursor: pointer;
+  /* scrollIntoView centre le verset : sans cette marge, la colonne sticky le mange. */
+  scroll-margin-block: 45vh;
+  transition: background-color var(--transition), border-color var(--transition);
+}
+
+.ayah:hover {
+  background-color: rgba(212, 175, 55, 0.06);
+}
+
+/* Verset en cours de recitation. */
+.ayah[data-active="true"] {
+  background-color: var(--or-voile);
+  border-left-color: var(--or-bord);
+  border-right-color: var(--or-bord);
+}
+
+/* Medaillon : le numero de verset, au-dessus de son texte (correction.txt, point 4).
+ * AyahItem rend les chiffres comme simple noeud texte du <span>, donc le medaillon
+ * EST le <span> ; sa position horizontale vient du `text-align: center` de `.ayah`. */
+.ayah-marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--corps-verset) * 0.96);
+  height: calc(var(--corps-verset) * 0.96);
+  margin-bottom: calc(var(--corps-verset) * 0.5);
+  border: calc(var(--corps-verset) * 0.05) solid var(--or);
+  border-radius: 50%;
+  background: var(--nuit-panneau);
+  color: var(--or-pale);
+  font-family: "Traditional Arabic", "Arabic Typesetting", serif;
+  font-size: calc(var(--corps-verset) * 0.44);
+  line-height: 1;
+}
+
+.ayah[data-active="true"] .ayah-marker {
+  background: var(--nuit-panneau-clair);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+}
+
+.ayah-text {
+  display: block;
+  text-align: center;
+  /* Corps du texte CORAN : la regle est ici, pas dans fonts.css, pour ne pas
+   * dependre de l'ordre d'import des deux feuilles. La famille, elle, vient des
+   * deux regles [data-riwaya] ci-dessous — la base n'en choisit plus. */
+  font-size: var(--corps-verset);
+  line-height: 2.1;
+  color: var(--creme);
+}
+
+/* Plan 3, T8 : une pile par mode, alignee sur data-riwaya de <main> (T7).
+ * Warsh garde la pile historique ; Hafs prend Amiri Quran seule (spec 2.6 :
+ * QCF2001 ecarte, le mode Hafs ne partage aucun glyphe avec le codepage prive). */
+[data-riwaya="warsh"] .ayah-text {
+  font-family: "KFGQPC Warsh", "Traditional Arabic", "Amiri", serif;
+}
+
+[data-riwaya="hafs"] .ayah-text {
+  font-family: "Amiri Quran", "Traditional Arabic", serif;
+}
+
+/* juz:page — discret, et seulement au survol : sinon il pollue la recitation. */
+.ayah-ref {
+  display: block;
+  margin-top: 6px;
+  text-align: center;
+  font-size: calc(var(--corps-verset) * 0.32);
+  letter-spacing: 0.08em;
+  color: var(--texte-faible);
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+.ayah:hover .ayah-ref,
+.ayah:focus-visible .ayah-ref {
+  opacity: 1;
+}
+
+/* ------------------------------------------------------------------ controles */
+
+button,
+select {
+  font: inherit;
+  color: var(--creme);
+  background: var(--nuit-panneau);
+  border: 1px solid var(--or-bord);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background-color var(--transition), border-color var(--transition),
+    color var(--transition);
+}
+
+button:hover:not(:disabled),
+select:hover {
+  background: var(--nuit-panneau-clair);
+  border-color: var(--or);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+select {
+  padding-right: 8px;
+}
+
+select option {
+  background: var(--nuit-panneau);
+  color: var(--creme);
+}
+
+button:focus-visible,
+select:focus-visible,
+.ayah:focus-visible {
+  outline: 2px solid var(--or);
+  outline-offset: 2px;
+}
+
+button[aria-pressed="true"] {
+  background: var(--or-voile);
+  border-color: var(--or);
+  color: var(--or-pale);
+}
+
+.download-panel {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.download-progress {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--texte-doux);
+}
+
+.download-panel progress {
+  accent-color: var(--or);
+}
+
+.download-error {
+  color: #e08a7a;
+  font-size: 0.8rem;
+}
+
+/* -------------------------------------------------------------------- player */
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0 0;
+  flex-wrap: wrap;
+}
+
+.player-position {
+  font-variant-numeric: tabular-nums;
+  color: var(--texte-doux);
+  font-size: 0.9rem;
+  min-width: 4.5rem;
+}
+
+.player-progress {
+  flex: 1;
+  min-width: 120px;
+  background: var(--bordure);
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.player-progress-fill {
+  height: 100%;
+  background: var(--or);
+  transition: width 0.2s ease;
+}
+
+.badge {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--or);
+  border: 1px solid var(--or-bord);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+/* ---------------------------------------------------------------- responsive */
+
+@media (max-width: 640px) {
+  .app-header,
+  .app-main {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .app-title {
+    font-size: 1.15rem;
+  }
+
+  .surah-heading {
+    margin-top: 18px;
+  }
+
+  /* La gouttiere reste etroite sur telephone : le plancher du clamp() donne
+   * 1.55rem, d'ou 17px de marge laterale, soit 34px perdus sur la largeur utile.
+   * On les resserre ici. */
+  .ayah {
+    padding: 10px 8px;
+  }
+
+  .player {
+    gap: 8px;
+  }
+}

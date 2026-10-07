@@ -1,0 +1,5 @@
+l'audio fonctionne bien avec la sourate choisie et suite un clic sur un verset. Mais il y a quelques manques : 1. le récitateur qu'on entend est toujours "Khalil Alhosari" et ne change donc pas quand on sélectionne dans la liste des récitateur du coran (reciter-select). 
+2. le ponteur de la sourie doit afficher l'icône pointeur comme sur un btn et mettre en surbrillance le verset en cours de lecture.
+3. Les boutons n'ont pas de title, on ne sait donc pas à quoi ils servent. 
+4. le texte doit être centré sur la page avec une taille assez grande et lisible permettant de lire et suivre la récitation. Le n° du verset aussi au-dessus de son texte. 
+5. Habiller la page, les n° de versets et leurs textes avec un style typique au coran réel. 
