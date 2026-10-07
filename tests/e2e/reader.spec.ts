@@ -110,6 +110,32 @@ test.describe("lecteur par verset", () => {
     await expect(page.getByTestId(`ayah-${verse}`)).toHaveAttribute("data-active", "true");
   });
 
+  test("saut pendant une pause puis Lecture : la lecture repart du verset cible", async ({ page }) => {
+    await stubVerseAudio(page);
+    await page.goto("/");
+    await page.selectOption('select[aria-label="Sourate"]', "112");
+    await expect(page.getByTestId("player-play")).toHaveAttribute("aria-label", "Pause");
+
+    await page.getByTestId("player-play").click();
+    await expect(page.getByTestId("player-play")).toHaveAttribute("aria-label", "Lire");
+
+    const bar = page.getByTestId("player-progress");
+    const box = await bar.boundingBox();
+    if (!box) throw new Error("barre de progression absente");
+    await bar.click({ position: { x: 2, y: box.height / 2 } });
+    await expect(page.getByTestId("ayah-1")).toHaveAttribute("data-active", "true");
+
+    await page.getByTestId("player-play").click();
+    await expect(page.getByTestId("player-play")).toHaveAttribute("aria-label", "Pause");
+    await expect
+      .poll(async () => page.getByTestId("ayah-4").getAttribute("data-active"), {
+        timeout: 10000,
+        intervals: [100, 150, 200, 300],
+        message: "la lecture ne repart pas apres un saut en pause",
+      })
+      .toBe("true");
+  });
+
   test("mode répétition (repeat)", async ({ page }) => {
     await stubVerseAudio(page);
     await page.goto("/");

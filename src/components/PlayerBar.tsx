@@ -94,11 +94,19 @@ export function PlayerBar({
     return Math.min(totalAyat, Math.max(1, verse));
   };
 
-  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!totalAyat) return;
+  const verseAtPointer = (e: React.MouseEvent<HTMLDivElement>): number | null => {
+    if (!totalAyat) return null;
     const rect = e.currentTarget.getBoundingClientRect();
-    if (rect.width <= 0) return;
-    onSeek(verseAtFraction((e.clientX - rect.left) / rect.width));
+    if (rect.width <= 0) return null;
+    return verseAtFraction((e.clientX - rect.left) / rect.width);
+  };
+
+  // Verset sous le pointeur : le title l'annonce avant le clic.
+  const [hoverVerse, setHoverVerse] = useState<number | null>(null);
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const verse = verseAtPointer(e);
+    if (verse !== null) onSeek(verse);
   };
 
   return (
@@ -219,8 +227,10 @@ export function PlayerBar({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progressPercent}
-        title="Aller à cette position"
+        title={totalAyat > 0 ? `Aller au verset ${hoverVerse ?? currentVerseNum}` : undefined}
         onClick={handleProgressClick}
+        onMouseMove={(e) => setHoverVerse(verseAtPointer(e))}
+        onMouseLeave={() => setHoverVerse(null)}
       >
         <div className="player-progress-fill" style={{ width: `${progressPercent}%` }} />
       </div>

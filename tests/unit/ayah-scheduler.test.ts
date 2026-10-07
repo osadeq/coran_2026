@@ -239,6 +239,37 @@ describe("seek vers un verset", () => {
   });
 });
 
+describe("seek pendant une pause puis reprise", () => {
+  // Bug reel : la pause gele l'horloge (clockSuspended), le seek en pause stoppe
+  // la piste en vol, et la reprise se contentait de degeler une horloge sans
+  // piste : Lecture affichee, aucun son, chaine morte.
+  it("la reprise ordonnance le verset cible au lieu de degeler une piste stoppee", async () => {
+    const { ctx, scheduler, onAyah } = makeRig();
+    await scheduler.play();
+    await flush();
+    await scheduler.pause();
+
+    ctx.currentTime = 4;
+    await scheduler.seekIndex(2);
+    expect(ctx.sources[0].stopped).toBe(true);
+
+    await scheduler.play();
+    await flush();
+
+    expect(scheduler.playing).toBe(true);
+    expect(ctx.sources).toHaveLength(2);
+    expect(ctx.sources[1].buffer?.duration).toBe(2.0);
+    expect(ctx.sources[1].startCalls[0]).toBe(4);
+    expect(onAyah.at(-1)).toBe(2);
+
+    // La chaine continue normalement apres la cible.
+    ctx.sources[1].fireEnded();
+    await flush();
+    expect(ctx.sources[2].buffer?.duration).toBe(0.5);
+    expect(scheduler.index).toBe(3);
+  });
+});
+
 describe("repeter (hifz)", () => {
   it("avec repeat, chaque fin rejoue le MEME verset, sans onDone ni re-decodage", async () => {
     const { ctx, scheduler, getDecoded, onDone, onAyah } = makeRig();
