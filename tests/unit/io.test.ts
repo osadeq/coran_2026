@@ -30,7 +30,8 @@ describe("writeJsonAtomic", () => {
     expect(readdirSync(join(dir, "timings", "120"))).toEqual(["1.json"]);
   });
 
-  it("quand le rename echoue, supprime le temporaire et conserve l'ancien fichier", () => {
+  // Seul Windows refuse le rename sur un fichier en lecture seule ; POSIX le remplace.
+  it.skipIf(process.platform !== "win32")("quand le rename echoue, supprime le temporaire et conserve l'ancien fichier", () => {
     const dir = mkdtempSync(join(tmpdir(), "coran-"));
     const path = join(dir, "out.json");
     writeJsonAtomic(path, { a: 1 });
