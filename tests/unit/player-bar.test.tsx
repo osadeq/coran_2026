@@ -277,12 +277,45 @@ describe("PlayerBar", () => {
   // Clic dans la barre de progression : meme saut que la jauge, la position
   // horizontale du clic choisit le verset.
   describe("barre de progression — saut au verset clique", () => {
-    const clickAt = (fraction: number) => {
+    const progressBar = () => {
       const bar = screen.getByTestId("player-progress");
       bar.getBoundingClientRect = () =>
         ({ left: 100, width: 200, top: 0, height: 8, right: 300, bottom: 8, x: 100, y: 0 }) as DOMRect;
-      fireEvent.click(bar, { clientX: 100 + fraction * 200 });
+      return bar;
     };
+    const clickAt = (fraction: number) => {
+      fireEvent.click(progressBar(), { clientX: 100 + fraction * 200 });
+    };
+    const hoverAt = (fraction: number) => {
+      fireEvent.mouseMove(progressBar(), { clientX: 100 + fraction * 200 });
+    };
+
+    // Le title nomme le verset vise, jamais un message generique.
+    it("le title annonce le verset sous le pointeur, puis le verset courant hors survol", () => {
+      renderBar({ currentIndex: 1 });
+      const bar = screen.getByTestId("player-progress");
+      expect(bar).toHaveAttribute("title", "Aller au verset 2");
+
+      hoverAt(0.5);
+      expect(bar).toHaveAttribute("title", "Aller au verset 3");
+      hoverAt(0.8);
+      expect(bar).toHaveAttribute("title", "Aller au verset 4");
+      hoverAt(0.1);
+      expect(bar).toHaveAttribute("title", "Aller au verset 1");
+
+      fireEvent.mouseLeave(bar);
+      expect(bar).toHaveAttribute("title", "Aller au verset 2");
+    });
+
+    it("le verset du title est celui que le clic choisit", () => {
+      const { onSeek } = renderBar({ timings: null });
+      const bar = screen.getByTestId("player-progress");
+
+      hoverAt(0.6);
+      const annonce = Number(bar.getAttribute("title")?.replace("Aller au verset ", ""));
+      clickAt(0.6);
+      expect(onSeek).toHaveBeenLastCalledWith(annonce);
+    });
 
     it("porte un title et suit la table de timings quand elle existe", () => {
       const { onSeek } = renderBar();

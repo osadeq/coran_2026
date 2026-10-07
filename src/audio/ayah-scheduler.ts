@@ -174,9 +174,11 @@ export function createAyahScheduler(opts: AyahSchedulerOptions): AyahScheduler {
         await ctx.resume();
         clockSuspended = false;
       } else {
-        // En pause : on repositionne et on signale le verset cible, mais aucune
-        // piste n'est ordonnancee et l'horloge n'a rien a dégeler.
+        // En pause : on repositionne et on signale le verset cible, sans rien
+        // ordonnancer. La piste gelee est stoppee : la reprise ne doit plus
+        // simplement degeler l'horloge, elle doit ordonnancer la cible.
         stopCurrent();
+        clockSuspended = false;
         index = target;
         onAyahChange?.(target);
       }
