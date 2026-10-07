@@ -273,4 +273,55 @@ describe("PlayerBar", () => {
       expect(screen.queryByRole("spinbutton")).toBeNull();
     });
   });
+
+  // Clic dans la barre de progression : meme saut que la jauge, la position
+  // horizontale du clic choisit le verset.
+  describe("barre de progression — saut au verset clique", () => {
+    const clickAt = (fraction: number) => {
+      const bar = screen.getByTestId("player-progress");
+      bar.getBoundingClientRect = () =>
+        ({ left: 100, width: 200, top: 0, height: 8, right: 300, bottom: 8, x: 100, y: 0 }) as DOMRect;
+      fireEvent.click(bar, { clientX: 100 + fraction * 200 });
+    };
+
+    it("porte un title et suit la table de timings quand elle existe", () => {
+      const { onSeek } = renderBar();
+      expect(screen.getByTestId("player-progress").getAttribute("title")).toBeTruthy();
+
+      // dummyTimings : 4 ayat de 3000 ms, 12000 ms au total.
+      clickAt(0.5);
+      expect(onSeek).toHaveBeenLastCalledWith(3);
+      clickAt(0.74);
+      expect(onSeek).toHaveBeenLastCalledWith(3);
+      clickAt(0.75);
+      expect(onSeek).toHaveBeenLastCalledWith(4);
+    });
+
+    it("sans timings, repartit la largeur a parts egales entre les ayat", () => {
+      const { onSeek } = renderBar({ timings: null });
+
+      clickAt(0.1);
+      expect(onSeek).toHaveBeenLastCalledWith(1);
+      clickAt(0.5);
+      expect(onSeek).toHaveBeenLastCalledWith(3);
+    });
+
+    it("borne les clics aux extremites : premier et dernier verset", () => {
+      const { onSeek } = renderBar({ timings: null });
+
+      clickAt(0);
+      expect(onSeek).toHaveBeenLastCalledWith(1);
+      clickAt(1);
+      expect(onSeek).toHaveBeenLastCalledWith(4);
+      clickAt(1.2);
+      expect(onSeek).toHaveBeenLastCalledWith(4);
+    });
+
+    it("sans verset total le clic ne fait rien", () => {
+      const { onSeek } = renderBar({ totalAyat: 0 });
+
+      clickAt(0.5);
+      expect(onSeek).not.toHaveBeenCalled();
+    });
+  });
 });

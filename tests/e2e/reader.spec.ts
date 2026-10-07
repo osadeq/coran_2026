@@ -92,6 +92,24 @@ test.describe("lecteur par verset", () => {
     await expect(input).toHaveValue("40");
   });
 
+  test("saut au verset clique dans la barre de progression", async ({ page }) => {
+    await stubVerseAudio(page);
+    await page.goto("/");
+    await page.selectOption('select[aria-label="Sourate"]', "2");
+
+    const bar = page.getByTestId("player-progress");
+    const box = await bar.boundingBox();
+    if (!box) throw new Error("barre de progression absente");
+    await bar.click({ position: { x: box.width / 2, y: box.height / 2 } });
+
+    // Milieu de la sourate 2 (285 ayat) : bien au-dela du debut, avant la fin.
+    const input = page.getByTestId("player-position").getByRole("spinbutton");
+    await expect.poll(async () => Number(await input.inputValue())).toBeGreaterThan(100);
+    expect(Number(await input.inputValue())).toBeLessThan(200);
+    const verse = await input.inputValue();
+    await expect(page.getByTestId(`ayah-${verse}`)).toHaveAttribute("data-active", "true");
+  });
+
   test("mode répétition (repeat)", async ({ page }) => {
     await stubVerseAudio(page);
     await page.goto("/");

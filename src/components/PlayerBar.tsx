@@ -77,6 +77,30 @@ export function PlayerBar({
 
   const progressPercent = calculateProgressPercent();
 
+  // Clic dans la barre : la fraction de largeur devient un instant de la
+  // sourate (table de timings) ou, a defaut, une fraction du nombre d'ayat.
+  const verseAtFraction = (fraction: number): number => {
+    const f = Math.min(1, Math.max(0, fraction));
+    const ayat = timings?.ayat;
+    let verse: number;
+    if (ayat && ayat.length > 0 && timings.durationMs > 0) {
+      const targetMs = f * timings.durationMs;
+      let index = 0;
+      while (index + 1 < ayat.length && ayat[index + 1][1] <= targetMs) index += 1;
+      verse = index + 1;
+    } else {
+      verse = Math.floor(f * totalAyat) + 1;
+    }
+    return Math.min(totalAyat, Math.max(1, verse));
+  };
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!totalAyat) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    if (rect.width <= 0) return;
+    onSeek(verseAtFraction((e.clientX - rect.left) / rect.width));
+  };
+
   return (
     <div className="player">
       {/* Plan 3, T7 : le selecteur de mode passe avant le recitant, c'est lui
@@ -195,6 +219,8 @@ export function PlayerBar({
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progressPercent}
+        title="Aller à cette position"
+        onClick={handleProgressClick}
       >
         <div className="player-progress-fill" style={{ width: `${progressPercent}%` }} />
       </div>

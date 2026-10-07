@@ -342,7 +342,8 @@ button[aria-pressed="true"] {
   flex: 1;
   min-width: 120px;
   background: var(--bordure);
-  height: 6px;
+  height: 8px;
+  cursor: pointer;
   border-radius: 3px;
   overflow: hidden;
 }
