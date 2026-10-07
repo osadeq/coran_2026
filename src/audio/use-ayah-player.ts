@@ -250,7 +250,12 @@ export function useAyahPlayer({
 
   const play = useCallback(async () => {
     try {
-      await ensureScheduler().play();
+      // Un ordonnanceur neuf (premier geste, ou reconstruit apres un changement de
+      // recitant en pause) part de l'index 0 : on le recale sur la position du hook.
+      const neuf = schedulerRef.current === null;
+      const scheduler = ensureScheduler();
+      if (neuf && indexRef.current > 0) await scheduler.seekIndex(indexRef.current);
+      await scheduler.play();
     } catch (err) {
       console.error("lecture impossible", err);
       setPlayingBoth(false);
