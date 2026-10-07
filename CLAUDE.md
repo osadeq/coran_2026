@@ -41,11 +41,12 @@ e2e seulement en T9.
 
 ## Etat
 
-- Suite actuelle : `npm test` 187/187 + 1 saute hors Windows (23 fichiers),
-  `npm run typecheck` vert, `npm run build` vert, `npm run e2e` 8/8 — plan Warsh/Hafs **entierement
+- Suite actuelle : `npm test` 191/191 + 1 saute hors Windows (23 fichiers),
+  `npm run typecheck` vert, `npm run build` vert, `npm run e2e` 9/9 — plan Warsh/Hafs **entierement
   clos** (controle d'ecoute manuel Hafs, 5 etapes, valide le 2026-10-05).
 - Jauge de position : champ numerique, saut au verset saisi (`onSeek`),
-  engage seulement sur l'evenement change natif.
+  engage seulement sur l'evenement change natif. Meme saut au clic dans la
+  barre de progression (position -> instant via timings, sinon prorata).
 - Artefacts de sondage (`tailles-baqarah.json`, `decoupage-baqarah.json`)
   supprimes en T9.
   `correction.txt` n'est pas reference par le plan — laisser tel quel.
