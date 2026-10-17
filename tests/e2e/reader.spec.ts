@@ -136,6 +136,40 @@ test.describe("lecteur par verset", () => {
       .toBe("true");
   });
 
+  test("changement de recitant en pause puis saut : Lecture part du verset choisi", async ({ page }) => {
+    await stubVerseAudio(page);
+    await page.goto("/");
+    await page.selectOption('select[aria-label="Sourate"]', "112");
+    await page.selectOption('[data-testid="player-riwaya"]', "hafs");
+    const play = page.getByTestId("player-play");
+    await expect(play).toHaveAttribute("aria-label", "Pause");
+    await play.click();
+    await expect(play).toHaveAttribute("aria-label", "Lire");
+
+    const reciter = page.getByTestId("player-reciter");
+    const actuel = await reciter.inputValue();
+    const valeurs = await reciter.locator("option").evaluateAll((opts) =>
+      opts.map((o) => (o as HTMLOptionElement).value),
+    );
+    const autre = valeurs.find((v) => v !== actuel);
+    if (!autre) throw new Error("un seul recitant Hafs");
+    await reciter.selectOption(autre);
+    await expect(play).toHaveAttribute("aria-label", "Lire");
+
+    await page.getByTestId("ayah-3").click();
+    await expect(page.getByTestId("ayah-3")).toHaveAttribute("data-active", "true");
+
+    const demandes: string[] = [];
+    page.on("request", (req) => {
+      if (req.url().endsWith(".mp3")) demandes.push(req.url());
+    });
+    await play.click();
+    await expect(play).toHaveAttribute("aria-label", "Pause");
+    await expect.poll(() => demandes.some((u) => u.endsWith("112003.mp3"))).toBe(true);
+    expect(demandes.some((u) => u.endsWith("112001.mp3"))).toBe(false);
+    await expect(page.getByTestId("ayah-1")).not.toHaveAttribute("data-active", "true");
+  });
+
   test("mode répétition (repeat)", async ({ page }) => {
     await stubVerseAudio(page);
     await page.goto("/");

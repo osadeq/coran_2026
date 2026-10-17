@@ -526,4 +526,84 @@ describe("useAyahPlayer sur l'ordonnanceur a relais", () => {
     expect(ctx.sources.length).toBe(sourcesBefore);
     expect(fetchBytes).not.toHaveBeenCalled();
   });
+
+
+  // Bug reel : changer de recitant en pause detruit l'ordonnanceur ; celui que
+  // Lecture reconstruit repartait de son index neuf (verset 1) au lieu de la
+  // position conservee par le hook.
+  describe("reprise sur un ordonnanceur reconstruit", () => {
+    async function pausedAfterOneVerse(rig: ReturnType<typeof makeRig>) {
+      const view = rig.render({ reciterId: 1 });
+      await act(async () => {
+        await view.result.current.play();
+      });
+      await settle();
+      act(() => {
+        rig.ctx.sources[0].fireEnded();
+      });
+      await settle();
+      await act(async () => {
+        await view.result.current.pause();
+      });
+      return view;
+    }
+
+    it("recitant change en pause puis Lecture : reprend au verset courant", async () => {
+      const rig = makeRig();
+      const { result, rerender } = await pausedAfterOneVerse(rig);
+      rerender({ reciterId: 2 });
+      await settle();
+      rig.fetchBytes.mockClear();
+
+      await act(async () => {
+        await result.current.play();
+      });
+      await settle();
+
+      expect(result.current.playing).toBe(true);
+      expect(result.current.index).toBe(1);
+      expect(rig.fetchBytes).toHaveBeenCalledWith(expect.stringContaining("Husary_128kbps"));
+      expect(rig.fetchBytes).toHaveBeenCalledWith(expect.stringContaining("112002.mp3"));
+      expect(rig.fetchBytes).not.toHaveBeenCalledWith(expect.stringContaining("112001.mp3"));
+    });
+
+    it("recitant change en pause, repositionnement, puis Lecture : part du verset choisi", async () => {
+      const rig = makeRig();
+      const { result, rerender } = await pausedAfterOneVerse(rig);
+      rerender({ reciterId: 2 });
+      await settle();
+      await act(async () => {
+        await result.current.seekAyah(4);
+      });
+      expect(result.current.index).toBe(3);
+      rig.fetchBytes.mockClear();
+
+      await act(async () => {
+        await result.current.play();
+      });
+      await settle();
+
+      expect(result.current.playing).toBe(true);
+      expect(result.current.index).toBe(3);
+      expect(rig.fetchBytes).toHaveBeenCalledWith(expect.stringContaining("112004.mp3"));
+      expect(rig.fetchBytes).not.toHaveBeenCalledWith(expect.stringContaining("112001.mp3"));
+    });
+
+    it("verset choisi avant toute lecture : Lecture part de ce verset", async () => {
+      const rig = makeRig();
+      const { result } = rig.render();
+      await act(async () => {
+        await result.current.seekAyah(3);
+      });
+
+      await act(async () => {
+        await result.current.play();
+      });
+      await settle();
+
+      expect(result.current.index).toBe(2);
+      expect(rig.fetchBytes).toHaveBeenCalledWith(expect.stringContaining("112003.mp3"));
+      expect(rig.fetchBytes).not.toHaveBeenCalledWith(expect.stringContaining("112001.mp3"));
+    });
+  });
 });
